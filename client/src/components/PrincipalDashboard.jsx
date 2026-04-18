@@ -79,7 +79,7 @@ export default function PrincipalDashboard() {
           return { branch, stream, strength: currentData[key].strength, present: currentData[key].present };
         });
 
-        await axios.post('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/save', {
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/save`, {
           date: currentDate,
           data: formattedData,
           finalize: false
@@ -114,7 +114,7 @@ export default function PrincipalDashboard() {
         return { branch, stream, strength: data[key].strength, present: data[key].present };
       });
 
-      await axios.post('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/save', {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/save`, {
         date,
         data: formattedData,
         finalize: true

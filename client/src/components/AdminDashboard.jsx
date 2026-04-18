@@ -68,7 +68,7 @@ export default function AdminDashboard() {
       const token = localStorage.getItem('token');
       const [statsRes, pendingRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/admin/stats?date=${selectedDate}`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/admin/pending', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/admin/pending`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setStats(statsRes.data);
       setPendingApprovals(pendingRes.data);
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
       onConfirm: async (newPass) => {
         if (!newPass) return;
         try {
-          await axios.post('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/admin/reset-password', 
+          await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/admin/reset-password`, 
             { userId: branch.id, newPassword: newPass }, 
             { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
           );
