@@ -227,8 +227,9 @@ app.get('/api/admin/export-excel', auth, async (req, res) => {
         const [users] = await pool.query('SELECT id, principal_name FROM users WHERE role = "principal" AND is_approved = TRUE');
         const [attendance] = await pool.query('SELECT principal_id, branch, stream, strength, present FROM attendance_data WHERE date = ? AND finalized = 1', [targetDate]);
 
+        const path = require('path');
         const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.readFile('F:\\Projects\\CO Attendance\\17-04-2026_COLLEGE ATTENDANCE.xlsx');
+        await workbook.xlsx.readFile(path.join(__dirname, 'template.xlsx'));
         const sheet = workbook.worksheets[0] || workbook.getWorksheet('STREAM WISE');
 
         const parts = targetDate.split('-');
