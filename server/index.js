@@ -329,4 +329,5 @@ app.get('/api/admin/export-excel', auth, async (req, res) => {
     }
 });
 
-app.listen(3002, () => console.log('Server running on port 3002'));
+const port = process.env.PORT || 3002;
+app.listen(port, () => console.log(`Server running on port ${port}`));
