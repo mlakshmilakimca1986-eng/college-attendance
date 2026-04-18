@@ -260,8 +260,8 @@ app.get('/api/admin/export-excel', auth, async (req, res) => {
             // Wipe out the old data in the template before throwing down the new payload
             for (const b in colMapping) {
                 for (const s in colMapping[b]) {
-                    row.getCell(colMapping[b][s].str).value = null;
-                    row.getCell(colMapping[b][s].pre).value = null;
+                    row.getCell(colMapping[b][s].str).value = 0;
+                    row.getCell(colMapping[b][s].pre).value = 0;
                 }
             }
 
@@ -272,8 +272,8 @@ app.get('/api/admin/export-excel', auth, async (req, res) => {
             for (const item of campusData) {
                 const map = colMapping[item.branch];
                 if (map && map[item.stream]) {
-                    if (item.strength) row.getCell(map[item.stream].str).value = parseInt(item.strength);
-                    if (item.present) row.getCell(map[item.stream].pre).value = parseInt(item.present);
+                    row.getCell(map[item.stream].str).value = parseInt(item.strength) || 0;
+                    row.getCell(map[item.stream].pre).value = parseInt(item.present) || 0;
                 }
             }
             row.commit();
