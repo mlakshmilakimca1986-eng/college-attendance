@@ -162,7 +162,7 @@ export default function PrincipalDashboard() {
   const handleDownloadPDF = () => {
     const element = document.getElementById('report-content');
     const opt = {
-      margin: [5, 5, 5, 5],
+      margin: [3, 5, 3, 5],
       filename: `${formatDate(date)}_${localStorage.getItem('name') || 'CAMPUS'}_COLLEGE ATTENDANCE.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, letterRendering: true },
@@ -321,33 +321,33 @@ export default function PrincipalDashboard() {
               <button onClick={() => setReportModal({ isOpen: false })} className="btn btn-ghost" style={{ padding: '0.5rem' }}>✕</button>
             </div>
 
-            <div id="report-content" style={{ padding: '0.5rem', background: '#fff' }}>
-              <div style={{ marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
-                  <img src="/logo.png" alt="Logo" style={{ height: '60px' }} />
+            <div id="report-content" style={{ padding: '0.2rem', background: '#fff' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.8rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '0.5rem' }}>
+                  <img src="/logo.png" alt="Logo" style={{ height: '40px' }} />
                   <div>
-                    <h2 style={{ fontSize: '1.8rem', color: '#0f172a', margin: 0, fontWeight: 900 }}>{localStorage.getItem('name')}</h2>
-                    <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0, fontWeight: 700, letterSpacing: '0.5px' }}>OFFICIAL ATTENDANCE RECORD — {formatDate(date)}</p>
+                    <h2 style={{ fontSize: '1.2rem', color: '#0f172a', margin: 0, fontWeight: 900 }}>{localStorage.getItem('name')}</h2>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0, fontWeight: 700, letterSpacing: '0.5px' }}>OFFICIAL ATTENDANCE RECORD — {formatDate(date)}</p>
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
-                  <div style={{ background: '#f8fafc', padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Strength</p>
-                    <h3 style={{ fontSize: '1.5rem', margin: '5px 0' }}>{calculateTotal('strength')}</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                  <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                    <p style={{ fontSize: '0.55rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Strength</p>
+                    <h3 style={{ fontSize: '1.1rem', margin: '2px 0' }}>{calculateTotal('strength')}</h3>
                   </div>
-                  <div style={{ background: '#f8fafc', padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Present</p>
-                    <h3 style={{ fontSize: '1.5rem', margin: '5px 0' }}>{calculateTotal('present')}</h3>
+                  <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                    <p style={{ fontSize: '0.55rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Present</p>
+                    <h3 style={{ fontSize: '1.1rem', margin: '2px 0' }}>{calculateTotal('present')}</h3>
                   </div>
                   <div style={{ 
                     background: '#f8fafc', 
-                    padding: '0.8rem', 
-                    borderRadius: '8px', 
-                    border: `2px solid ${getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength')))}` 
+                    padding: '0.4rem 0.6rem', 
+                    borderRadius: '6px', 
+                    border: `1.5px solid ${getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength')))}` 
                   }}>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Total Percentage</p>
-                    <h3 style={{ fontSize: '1.5rem', margin: '5px 0', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
+                    <p style={{ fontSize: '0.55rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Total Percentage</p>
+                    <h3 style={{ fontSize: '1.1rem', margin: '2px 0', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
                       {getPercentage(calculateTotal('present'), calculateTotal('strength'))}%
                     </h3>
                   </div>
@@ -356,10 +356,10 @@ export default function PrincipalDashboard() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'left', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Stream / Group</th>
-                      <th style={{ textAlign: 'center', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Str</th>
-                      <th style={{ textAlign: 'center', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Pre</th>
-                      <th style={{ textAlign: 'center', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>%</th>
+                      <th style={{ textAlign: 'left', padding: '6px', fontSize: '0.65rem', borderBottom: '2px solid #e2e8f0' }}>Stream / Group</th>
+                      <th style={{ textAlign: 'center', padding: '6px', fontSize: '0.65rem', borderBottom: '2px solid #e2e8f0' }}>Str</th>
+                      <th style={{ textAlign: 'center', padding: '6px', fontSize: '0.65rem', borderBottom: '2px solid #e2e8f0' }}>Pre</th>
+                      <th style={{ textAlign: 'center', padding: '6px', fontSize: '0.65rem', borderBottom: '2px solid #e2e8f0' }}>%</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -372,7 +372,7 @@ export default function PrincipalDashboard() {
                       return (
                         <React.Fragment key={streamGroup}>
                           <tr>
-                            <td colSpan="4" style={{ background: '#f8fafc', fontWeight: 900, color: '#4f46e5', fontSize: '1.1rem', padding: '15px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #e2e8f0' }}>
+                            <td colSpan="4" style={{ background: '#f8fafc', fontWeight: 900, color: '#4f46e5', fontSize: '0.85rem', padding: '6px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #e2e8f0' }}>
                               {streamGroup}
                             </td>
                           </tr>
@@ -380,10 +380,10 @@ export default function PrincipalDashboard() {
                             const id = `${streamGroup}|${sect}`;
                             return (
                               <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                <td style={{ paddingLeft: '1.5rem', fontWeight: 900, fontSize: '0.9rem', padding: '6px', color: '#0f172a' }}>{sect}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.9rem', fontWeight: 900, color: '#0f172a' }}>{data[id].strength}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.9rem', fontWeight: 900, color: '#0f172a' }}>{data[id].present}</td>
-                                <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: getStatusColor(getPercentage(data[id].present, data[id].strength)) }}>
+                                <td style={{ paddingLeft: '10px', fontWeight: 900, fontSize: '0.75rem', padding: '4px', color: '#0f172a' }}>{sect}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 900, color: '#0f172a' }}>{data[id].strength}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 900, color: '#0f172a' }}>{data[id].present}</td>
+                                <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.75rem', color: getStatusColor(getPercentage(data[id].present, data[id].strength)) }}>
                                   {getPercentage(data[id].present, data[id].strength)}%
                                 </td>
                               </tr>
@@ -395,10 +395,10 @@ export default function PrincipalDashboard() {
                   </tbody>
                   <tfoot>
                     <tr style={{ background: '#0f172a', color: '#ffffff' }}>
-                      <td style={{ padding: '12px 18px', fontWeight: 900, fontSize: '1.1rem' }}>GRAND TOTAL</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem' }}>{calculateTotal('strength')}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem' }}>{calculateTotal('present')}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
+                      <td style={{ padding: '8px 12px', fontWeight: 900, fontSize: '0.9rem' }}>GRAND TOTAL</td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem' }}>{calculateTotal('strength')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem' }}>{calculateTotal('present')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
                         {getPercentage(calculateTotal('present'), calculateTotal('strength'))}%
                       </td>
                     </tr>
