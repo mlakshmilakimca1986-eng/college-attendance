@@ -186,8 +186,8 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-      <header className="glass-card header-card">
-        <div className="brand-section">
+      <header className="glass-card header-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '1.5rem 2rem', gap: '1.5rem' }}>
+        <div className="brand-section" style={{ width: '100%', borderBottom: '1px solid rgba(226, 232, 240, 0.4)', paddingBottom: '1rem', marginBottom: '-0.5rem' }}>
           <div className="logo-container">
             <img src="/logo.png" alt="Logo" />
           </div>
@@ -196,8 +196,8 @@ export default function AdminDashboard() {
             <p className="subtitle" style={{ whiteSpace: 'nowrap' }}>Real-time Campus Monitoring</p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <div className="input-wrapper" style={{ marginRight: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', width: '180px' }}>
+        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
+          <div className="input-wrapper" style={{ marginRight: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', width: '180px' }}>
             <Clock className="icon" size={16} />
             <input 
               type="date" 
