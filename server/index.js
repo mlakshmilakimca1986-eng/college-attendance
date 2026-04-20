@@ -556,14 +556,13 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             if (incRowIdx) {
                 const row = formatSheet.getRow(incRowIdx);
                 userAttendance.filter(a => a.branch === 'INCOMING SENIORS').forEach(item => {
-                    const baseCol = consolidatedMapping["INCOMING SENIORS"][item.stream];
+                    const baseCol = consolidatedMapping["INCOMING SENIORS"]?.[item.stream];
                     if (baseCol) {
                         row.getCell(baseCol).value = item.cbse_strength || 0;
                         row.getCell(baseCol + 1).value = item.cbse_present || 0;
                         row.getCell(baseCol + 2).value = item.pu_strength || 0;
                         row.getCell(baseCol + 3).value = item.pu_present || 0;
                         
-                        // Formulas for Combine (TOT) and Combine (PRE)
                         const c1 = getCol(baseCol) + incRowIdx;
                         const c2 = getCol(baseCol + 2) + incRowIdx;
                         const p1 = getCol(baseCol + 1) + incRowIdx;
@@ -577,7 +576,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                         row.getCell(baseCol + 6).numFmt = '0%';
                     }
                 });
-                // Junior classes
+                // Junior classes (CO-IPL) - Using incRow row
                 userAttendance.filter(a => a.branch === 'CO-IPL').forEach(item => {
                     let col;
                     if (item.stream === '7th Class') col = 84;
@@ -587,9 +586,22 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     if (col) {
                         row.getCell(col).value = item.strength || 0;
                         row.getCell(col + 1).value = item.present || 0;
-                        row.getCell(col + 2).value = { formula: `IF(${getCol(col)}${incRowIdx}>0, ${getCol(col+1)}${incRowIdx}/${getCol(col)}${incRowIdx}, 0)` };
+                        const sC = getCol(col) + incRowIdx;
+                        const pC = getCol(col + 1) + incRowIdx;
+                        row.getCell(col + 2).value = { formula: `IF(${sC}>0, ${pC}/${sC}, 0)` };
                         row.getCell(col + 2).numFmt = '0%';
                     }
+                });
+                
+                // LTC-VAIDYAH - Using incRow row
+                userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
+                    const col = 104; // CZ
+                    row.getCell(col).value = item.strength || 0;
+                    row.getCell(col + 1).value = item.present || 0;
+                    const sC = getCol(col) + incRowIdx;
+                    const pC = getCol(col + 1) + incRowIdx;
+                    row.getCell(col + 2).value = { formula: `IF(${sC}>0, ${pC}/${sC}, 0)` };
+                    row.getCell(col + 2).numFmt = '0%';
                 });
                 row.commit();
             }
@@ -597,7 +609,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             if (outRowIdx) {
                 const row = formatSheet.getRow(outRowIdx);
                 userAttendance.filter(a => a.branch === 'OUTGOING SENIORS').forEach(item => {
-                    const baseCol = consolidatedMapping["OUTGOING SENIORS"][item.stream];
+                    const baseCol = consolidatedMapping["OUTGOING SENIORS"]?.[item.stream];
                     if (baseCol) {
                         row.getCell(baseCol).value = item.cbse_strength || 0;
                         row.getCell(baseCol + 1).value = item.cbse_present || 0;
@@ -621,7 +633,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                 userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
                     row.getCell(104).value = item.strength || 0;
                     row.getCell(105).value = item.present || 0;
-                    row.getCell(106).value = { formula: `IF(CZ${outRowIdx}>0, DA${outRowIdx}/CZ${outRowIdx}, 0)` };
+                    row.getCell(106).value = { formula: `IF(${getCol(104)}${outRowIdx}>0, ${getCol(105)}${outRowIdx}/${getCol(104)}${outRowIdx}, 0)` };
                     row.getCell(106).numFmt = '0%';
                 });
                 row.commit();
