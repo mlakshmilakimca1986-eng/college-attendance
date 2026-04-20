@@ -233,13 +233,13 @@ export default function PrincipalDashboard() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
-          <div className="input-wrapper" style={{ marginRight: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <Calendar className="icon" size={16} />
+          <div className="input-wrapper" style={{ marginRight: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '0.8rem', position: 'relative' }}>
+            <Calendar className="icon" size={16} style={{ color: '#4f46e5', position: 'absolute', left: '12px' }} />
             <input 
               type="date" 
               value={date} 
               onChange={(e) => setDate(e.target.value)}
-              style={{ padding: '0.5rem 0', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}
+              style={{ padding: '0.5rem 0', paddingLeft: '2rem', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}
             />
           </div>
           <button onClick={() => setReportModal({ isOpen: true })} className="btn btn-ghost" style={{ gap: '0.4rem', background: '#f5f3ff', color: '#6d28d9', fontSize: '0.75rem', padding: '0.5rem 1rem' }}>
@@ -342,26 +342,27 @@ export default function PrincipalDashboard() {
         <table>
           <thead>
             <tr style={{ background: '#f8fafc' }}>
-              <th rowSpan="2" style={{ borderRight: '1px solid #e2e8f0' }}>Stream / Section</th>
-              <th colSpan="2" style={{ textAlign: 'center', borderBottom: '1px solid #e2e8f0', color: '#6366f1' }}>CBSE</th>
-              <th colSpan="2" style={{ textAlign: 'center', borderBottom: '1px solid #e2e8f0', color: '#ec4899' }}>PU</th>
-              <th rowSpan="2" style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0' }}>TOTAL</th>
-              <th rowSpan="2" style={{ textAlign: 'center' }}>%</th>
-              <th rowSpan="2" style={{ textAlign: 'center' }}>Status</th>
-            </tr>
-            <tr style={{ background: '#f8fafc' }}>
-              <th style={{ textAlign: 'center', fontSize: '0.65rem' }}>STR</th>
-              <th style={{ textAlign: 'center', fontSize: '0.65rem' }}>PRE</th>
-              <th style={{ textAlign: 'center', fontSize: '0.65rem' }}>STR</th>
-              <th style={{ textAlign: 'center', fontSize: '0.65rem' }}>PRE</th>
+              <th style={{ textAlign: 'left', padding: '1rem', borderRight: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Stream / Section</th>
+              <th colSpan="2" style={{ textAlign: 'center', color: '#6366f1', fontSize: '0.7rem', fontWeight: 900 }}>CBSE</th>
+              <th colSpan="2" style={{ textAlign: 'center', color: '#ec4899', fontSize: '0.7rem', fontWeight: 900 }}>PU</th>
+              <th style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.75rem' }}>TOTAL</th>
+              <th style={{ textAlign: 'center', color: '#64748b', fontSize: '0.75rem' }}>%</th>
+              <th style={{ textAlign: 'center', color: '#64748b', fontSize: '0.75rem' }}>STATUS</th>
             </tr>
           </thead>
           <tbody>
             {Object.keys(STREAMS).map(stream => (
               <React.Fragment key={stream}>
-                <tr>
-                  <td colSpan="8" style={{ background: '#f8fafc', fontWeight: 800, color: '#6366f1', fontSize: '0.75rem' }}>{stream}</td>
-                </tr>
+                  <tr key={stream}>
+                    <td colSpan="8" style={{ background: 'linear-gradient(90deg, #f8fafc, #f1f5f9)', padding: '0.8rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                        <div style={{ padding: '4px 12px', background: '#4f46e5', color: '#fff', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '1px' }}>
+                          {stream} {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') ? '(CBSE & PU)' : ''}
+                        </div>
+                        <div style={{ height: '2px', flex: 1, background: 'rgba(79, 70, 229, 0.1)', borderRadius: '2px' }}></div>
+                      </div>
+                    </td>
+                  </tr>
                 {STREAMS[stream].map(section => {
                   const id = `${stream}|${section}`;
                   return (

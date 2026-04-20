@@ -201,13 +201,13 @@ export default function AdminDashboard() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
-          <div className="input-wrapper" style={{ marginRight: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <Clock className="icon" size={16} />
+          <div className="input-wrapper" style={{ marginRight: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '0.8rem', position: 'relative' }}>
+            <Clock className="icon" size={16} style={{ color: '#4f46e5', position: 'absolute', left: '12px' }} />
             <input 
               type="date" 
               value={selectedDate} 
               onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ padding: '0.5rem 0', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}
+              style={{ padding: '0.5rem 0', paddingLeft: '2rem', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}
             />
           </div>
           <button onClick={() => setView('analytics')} className={`btn ${view === 'analytics' ? 'btn-primary' : 'btn-ghost'}`} style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem' }}>
@@ -491,17 +491,11 @@ export default function AdminDashboard() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th rowSpan="2" style={{ textAlign: 'left', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
-                      <th colSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '1px solid #e2e8f0', color: '#6366f1' }}>CBSE</th>
-                      <th colSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '1px solid #e2e8f0', color: '#ec4899' }}>PU</th>
-                      <th rowSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>TOT</th>
-                      <th rowSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
-                    </tr>
-                    <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#6366f1' }}>S</th>
-                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#6366f1' }}>P</th>
-                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#ec4899' }}>S</th>
-                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#ec4899' }}>P</th>
+                      <th style={{ textAlign: 'left', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
+                      <th style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#6366f1' }}>CBSE</th>
+                      <th style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#ec4899' }}>PU</th>
+                      <th style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>TOT</th>
+                      <th style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
                     </tr>
                   </thead>
                   <tbody>

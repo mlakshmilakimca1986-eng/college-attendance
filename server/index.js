@@ -501,14 +501,38 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
         const [dPart, mPart, yPart] = targetDate.split('-').reverse();
         const formattedDate = `${yPart}-${mPart}-${dPart}`;
         
+        // Helper to convert col index to letter
+        const getCol = (idx) => {
+            let letter = '';
+            while (idx > 0) {
+                let mod = (idx - 1) % 26;
+                letter = String.fromCharCode(65 + mod) + letter;
+                idx = Math.floor((idx - mod) / 26);
+            }
+            return letter;
+        };
+
+        // Initialize all relevant rows to 0
+        const initRange = (start, count) => {
+            for (let r = start; r < start + count; r++) {
+                const row = formatSheet.getRow(r);
+                if (row.getCell(2).text) {
+                    // Fill columns Col 5 to 110 with 0
+                    for (let c = 5; c <= 110; c++) {
+                        row.getCell(c).value = 0;
+                    }
+                }
+            }
+        };
+        initRange(7, 38);
+        initRange(51, 38);
+
         // Populate Format-Blr
         for (const user of userList) {
             const campusName = user.principal_name.toUpperCase();
             const userAttendance = attendance.filter(a => a.principal_id === user.id);
             
-            // Map campus to row in Format-Blr
-            // Incoming starts at 7, Outgoing starts at 51
-            const findRow = (start, count) => {
+            const findRowIdx = (start, count) => {
                 for (let r = start; r < start + count; r++) {
                     const row = formatSheet.getRow(r);
                     if (row.getCell(2).text.toUpperCase() === campusName) return r;
@@ -516,8 +540,8 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                 return null;
             };
 
-            const incRowIdx = findRow(7, 38);
-            const outRowIdx = findRow(51, 38);
+            const incRowIdx = findRowIdx(7, 38);
+            const outRowIdx = findRowIdx(51, 38);
 
             if (incRowIdx) {
                 const row = formatSheet.getRow(incRowIdx);
@@ -528,11 +552,22 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                         row.getCell(baseCol + 1).value = item.cbse_present || 0;
                         row.getCell(baseCol + 2).value = item.pu_strength || 0;
                         row.getCell(baseCol + 3).value = item.pu_present || 0;
-                        row.getCell(baseCol + 4).value = (item.cbse_strength || 0) + (item.pu_strength || 0);
-                        row.getCell(baseCol + 5).value = (item.cbse_present || 0) + (item.pu_present || 0);
+                        
+                        // Formulas for Combine (TOT) and Combine (PRE)
+                        const c1 = getCol(baseCol) + incRowIdx;
+                        const c2 = getCol(baseCol + 2) + incRowIdx;
+                        const p1 = getCol(baseCol + 1) + incRowIdx;
+                        const p2 = getCol(baseCol + 3) + incRowIdx;
+                        
+                        row.getCell(baseCol + 4).value = { formula: `${c1}+${c2}` };
+                        row.getCell(baseCol + 5).value = { formula: `${p1}+${p2}` };
+                        const totCell = getCol(baseCol + 4) + incRowIdx;
+                        const preCell = getCol(baseCol + 5) + incRowIdx;
+                        row.getCell(baseCol + 6).value = { formula: `IF(${totCell}>0, ${preCell}/${totCell}, 0)` };
+                        row.getCell(baseCol + 6).numFmt = '0%';
                     }
                 });
-                // Junior classes in Format-Blr
+                // Junior classes
                 userAttendance.filter(a => a.branch === 'CO-IPL').forEach(item => {
                     let col;
                     if (item.stream === '7th Class') col = 84;
@@ -542,6 +577,8 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     if (col) {
                         row.getCell(col).value = item.strength || 0;
                         row.getCell(col + 1).value = item.present || 0;
+                        row.getCell(col + 2).value = { formula: `IF(${getCol(col)}${incRowIdx}>0, ${getCol(col+1)}${incRowIdx}/${getCol(col)}${incRowIdx}, 0)` };
+                        row.getCell(col + 2).numFmt = '0%';
                     }
                 });
                 row.commit();
@@ -556,14 +593,26 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                         row.getCell(baseCol + 1).value = item.cbse_present || 0;
                         row.getCell(baseCol + 2).value = item.pu_strength || 0;
                         row.getCell(baseCol + 3).value = item.pu_present || 0;
-                        row.getCell(baseCol + 4).value = (item.cbse_strength || 0) + (item.pu_strength || 0);
-                        row.getCell(baseCol + 5).value = (item.cbse_present || 0) + (item.pu_present || 0);
+                        
+                        const c1 = getCol(baseCol) + outRowIdx;
+                        const c2 = getCol(baseCol + 2) + outRowIdx;
+                        const p1 = getCol(baseCol + 1) + outRowIdx;
+                        const p2 = getCol(baseCol + 3) + outRowIdx;
+                        
+                        row.getCell(baseCol + 4).value = { formula: `${c1}+${c2}` };
+                        row.getCell(baseCol + 5).value = { formula: `${p1}+${p2}` };
+                        const totCell = getCol(baseCol + 4) + outRowIdx;
+                        const preCell = getCol(baseCol + 5) + outRowIdx;
+                        row.getCell(baseCol + 6).value = { formula: `IF(${totCell}>0, ${preCell}/${totCell}, 0)` };
+                        row.getCell(baseCol + 6).numFmt = '0%';
                     }
                 });
                 // LTC-VAIDYAH
                 userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
                     row.getCell(104).value = item.strength || 0;
                     row.getCell(105).value = item.present || 0;
+                    row.getCell(106).value = { formula: `IF(CZ${outRowIdx}>0, DA${outRowIdx}/CZ${outRowIdx}, 0)` };
+                    row.getCell(106).numFmt = '0%';
                 });
                 row.commit();
             }
