@@ -364,8 +364,8 @@ export default function PrincipalDashboard() {
                   ) : (
                     <tr key={stream + '_junior_heading'} style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                       <th style={{ width: '25%', padding: '1rem', textAlign: 'left', borderLeft: '4px solid #4f46e5', color: '#1e293b', fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase' }}>{stream}</th>
-                      <th style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b', fontWeight: 900 }}>STR</th>
-                      <th style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b', fontWeight: 900 }}>PRE</th>
+                      <th colSpan="2" style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b', fontWeight: 900 }}>STR</th>
+                      <th colSpan="2" style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b', fontWeight: 900 }}>PRE</th>
                       <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>TOTAL</th>
                       <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>%</th>
                       <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>ST</th>
