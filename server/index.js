@@ -93,8 +93,12 @@ app.post('/api/attendance/save', auth, async (req, res) => {
             const pu_s = parseInt(item.pu_strength) || 0;
             const pu_p = parseInt(item.pu_present) || 0;
             
-            const total_s = cb_s + pu_s;
-            const total_p = cb_p + pu_p;
+            // Fallback: If granular fields are 0, use direct strength/present (for Juniors/LTC)
+            let total_s = cb_s + pu_s;
+            let total_p = cb_p + pu_p;
+            
+            if (total_s === 0 && item.strength) total_s = parseInt(item.strength) || 0;
+            if (total_p === 0 && item.present) total_p = parseInt(item.present) || 0;
 
             const isEntryFinalized = (finalize && (total_s > 0 || total_p > 0)) ? 1 : 0;
             

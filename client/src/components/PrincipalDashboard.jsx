@@ -81,7 +81,17 @@ export default function PrincipalDashboard() {
         const token = localStorage.getItem('token');
         const formattedData = Object.keys(currentData).map(key => {
           const [branch, stream] = key.split('|');
-          return { branch, stream, strength: currentData[key].strength, present: currentData[key].present };
+          const row = currentData[key];
+          return { 
+            branch, 
+            stream, 
+            strength: row.strength, 
+            present: row.present,
+            cbse_strength: row.cbse_strength,
+            cbse_present: row.cbse_present,
+            pu_strength: row.pu_strength,
+            pu_present: row.pu_present
+          };
         });
 
         await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/save`, {
@@ -133,17 +143,20 @@ export default function PrincipalDashboard() {
     setIsFinalizing(true);
     try {
       const token = localStorage.getItem('token');
-      const formattedData = Object.keys(data).map(key => {
-        const [branch, stream] = key.split('|');
-        return { 
-          branch, 
-          stream, 
-          cbse_strength: data[key].cbse_strength, 
-          cbse_present: data[key].cbse_present, 
-          pu_strength: data[key].pu_strength, 
-          pu_present: data[key].pu_present 
-        };
-      });
+        const formattedData = Object.keys(data).map(key => {
+          const [branch, stream] = key.split('|');
+          const row = data[key];
+          return { 
+            branch, 
+            stream, 
+            strength: row.strength,
+            present: row.present,
+            cbse_strength: row.cbse_strength, 
+            cbse_present: row.cbse_present, 
+            pu_strength: row.pu_strength, 
+            pu_present: row.pu_present 
+          };
+        });
 
       await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/save`, {
         date,
