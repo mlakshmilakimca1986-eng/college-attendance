@@ -82,20 +82,35 @@ app.post('/api/attendance/save', auth, async (req, res) => {
     const { date, data, finalize } = req.body;
     console.log(`>>> SAVE REQUEST: Date=${date}, Finalize=${finalize}, Rows=${data.length}`);
     try {
+        if (!data || data.length === 0) return res.send('No data to save');
+
+        const values = [];
+        const params = [];
+        
         for (const item of data) {
-            // Only mark as finalized if there is actual data and finalize is true
             const isEntryFinalized = (finalize && (item.strength || item.present)) ? 1 : 0;
-            
-            await pool.query(
-                `INSERT INTO attendance_data (principal_id, date, branch, stream, strength, present, finalized) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?) 
-                 ON DUPLICATE KEY UPDATE 
-                    strength = VALUES(strength), 
-                    present = VALUES(present), 
-                    finalized = CASE WHEN finalized = 1 THEN 1 ELSE VALUES(finalized) END`,
-                [req.user.id, date, item.branch, item.stream, item.strength || 0, item.present || 0, isEntryFinalized]
+            values.push('(?, ?, ?, ?, ?, ?, ?)');
+            params.push(
+                req.user.id, 
+                date, 
+                item.branch, 
+                item.stream, 
+                item.strength || 0, 
+                item.present || 0, 
+                isEntryFinalized
             );
         }
+
+        const sql = `
+            INSERT INTO attendance_data (principal_id, date, branch, stream, strength, present, finalized) 
+            VALUES ${values.join(',')}
+            ON DUPLICATE KEY UPDATE 
+                strength = VALUES(strength), 
+                present = VALUES(present), 
+                finalized = CASE WHEN finalized = 1 THEN 1 ELSE VALUES(finalized) END
+        `;
+
+        await pool.query(sql, params);
         res.send('Success');
     } catch (err) {
         console.error('>>> SAVE FAILED:', err.message);

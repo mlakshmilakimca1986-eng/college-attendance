@@ -91,7 +91,7 @@ export default function AdminDashboard() {
       });
       
       // Construct WhatsApp Message
-      const message = `Dear Principal,\n\nI hope this message finds you well.\n\nThis is to inform you that the account for the College Attendance Portal has been successfully approved by the Administrator. The user may now log in using their credentials and access the portal.\n\nThank you.`;
+      const message = `Dear *Principal*,\n\nI hope this message finds you well.\n\nThis is to inform you that the account for the *College Attendance Portal* has been successfully *APPROVED* by the Administrator. The user may now *log in* using their credentials and access the portal.\n\nThank you.`;
       const whatsappUrl = `https://wa.me/${user.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
       
       showModal('Success', `${user.principal_name} approved! Opening WhatsApp notification...`, 'success');
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
   const handleDownloadPDF = () => {
     const element = document.getElementById('report-content');
     const opt = {
-      margin: [5, 5, 5, 5],
+      margin: [3, 5, 3, 5],
       filename: `${formatDate(selectedDate)}_${reportModal.branchName}_COLLEGE ATTENDANCE.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, letterRendering: true },
@@ -426,24 +426,24 @@ export default function AdminDashboard() {
               <button onClick={() => setReportModal({ ...reportModal, isOpen: false })} className="btn btn-ghost" style={{ padding: '0.5rem' }}>✕</button>
             </div>
 
-            <div id="report-content" style={{ padding: '0.5rem', background: '#fff' }}>
-              <div style={{ marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
-                  <img src="/logo.png" alt="Logo" style={{ height: '60px' }} />
+            <div id="report-content" style={{ padding: '8mm', background: '#fff' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1.2rem', borderBottom: '3px solid #f1f5f9', paddingBottom: '0.8rem' }}>
+                  <img src="/logo.png" alt="Logo" style={{ height: '50px' }} />
                   <div>
-                    <h1 style={{ fontSize: '1.8rem', color: '#0f172a', margin: 0, fontWeight: 900 }}>{reportModal.branchName}</h1>
-                    <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0, fontWeight: 700, letterSpacing: '0.5px' }}>OFFICIAL ATTENDANCE REPORT — {formatDate(reportModal.date)}</p>
+                    <h2 style={{ fontSize: '1.6rem', color: '#0f172a', margin: 0, fontWeight: 900, textTransform: 'uppercase' }}>{reportModal.branchName}</h2>
+                    <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0, fontWeight: 700, letterSpacing: '0.8px' }}>OFFICIAL ATTENDANCE REPORT — {formatDate(reportModal.date)}</p>
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', marginBottom: '1.2rem' }}>
                   <div style={{ background: '#f8fafc', padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Strength</p>
-                    <h3 style={{ fontSize: '1.8rem', margin: '5px 0', fontWeight: 900 }}>{reportModal.data.reduce((s, a) => s + a.strength, 0)}</h3>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Strength</p>
+                    <h3 style={{ fontSize: '1.6rem', margin: '4px 0', fontWeight: 900 }}>{reportModal.data.reduce((s, a) => s + a.strength, 0)}</h3>
                   </div>
                   <div style={{ background: '#f8fafc', padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Present</p>
-                    <h3 style={{ fontSize: '1.8rem', margin: '5px 0', fontWeight: 900 }}>{reportModal.data.reduce((s, a) => s + a.present, 0)}</h3>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Present</p>
+                    <h3 style={{ fontSize: '1.6rem', margin: '4px 0', fontWeight: 900 }}>{reportModal.data.reduce((s, a) => s + a.present, 0)}</h3>
                   </div>
                   <div style={{ 
                     background: '#f8fafc', 
@@ -451,8 +451,8 @@ export default function AdminDashboard() {
                     borderRadius: '8px', 
                     border: `2px solid ${getStatusColor(getPercentage(reportModal.data.reduce((s, a) => s + a.present, 0), reportModal.data.reduce((s, a) => s + a.strength, 0)))}` 
                   }}>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Total Percentage</p>
-                    <h3 style={{ fontSize: '1.8rem', margin: '5px 0', fontWeight: 900, color: getStatusColor(getPercentage(reportModal.data.reduce((s, a) => s + a.present, 0), reportModal.data.reduce((s, a) => s + a.strength, 0))) }}>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Total Percentage</p>
+                    <h3 style={{ fontSize: '1.6rem', margin: '4px 0', fontWeight: 900, color: getStatusColor(getPercentage(reportModal.data.reduce((s, a) => s + a.present, 0), reportModal.data.reduce((s, a) => s + a.strength, 0))) }}>
                       {getPercentage(reportModal.data.reduce((s, a) => s + a.present, 0), reportModal.data.reduce((s, a) => s + a.strength, 0))}%
                     </h3>
                   </div>
@@ -461,10 +461,10 @@ export default function AdminDashboard() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'left', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Stream / Group</th>
-                      <th style={{ textAlign: 'center', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Str</th>
-                      <th style={{ textAlign: 'center', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Pre</th>
-                      <th style={{ textAlign: 'center', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>%</th>
+                      <th style={{ textAlign: 'left', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
+                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STR</th>
+                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>PRE</th>
+                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -474,16 +474,16 @@ export default function AdminDashboard() {
                       return (
                         <React.Fragment key={streamGroup}>
                           <tr>
-                            <td colSpan="4" style={{ background: '#f8fafc', fontWeight: 900, color: '#4f46e5', fontSize: '1.1rem', padding: '15px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #e2e8f0' }}>
+                            <td colSpan="4" style={{ background: '#f1f5f9', fontWeight: 900, color: '#4f46e5', fontSize: '1rem', padding: '10px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1px solid #e2e8f0' }}>
                               {streamGroup}
                             </td>
                           </tr>
                           {groupRows.map((row, idx) => (
                             <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                              <td style={{ paddingLeft: '1.5rem', fontWeight: 900, fontSize: '0.9rem', padding: '6px', color: '#0f172a' }}>{row.stream}</td>
-                              <td style={{ textAlign: 'center', fontSize: '0.9rem', fontWeight: 900, color: '#0f172a' }}>{row.strength}</td>
-                              <td style={{ textAlign: 'center', fontSize: '0.9rem', fontWeight: 900, color: '#0f172a' }}>{row.present}</td>
-                              <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: getStatusColor(getPercentage(row.present, row.strength)) }}>
+                              <td style={{ paddingLeft: '15px', fontWeight: 700, fontSize: '0.95rem', padding: '6px', color: '#0f172a' }}>{row.stream}</td>
+                              <td style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{row.strength}</td>
+                              <td style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{row.present}</td>
+                              <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.95rem', color: getStatusColor(getPercentage(row.present, row.strength)) }}>
                                 {getPercentage(row.present, row.strength)}%
                               </td>
                             </tr>
@@ -494,7 +494,7 @@ export default function AdminDashboard() {
                   </tbody>
                   <tfoot>
                     <tr style={{ background: '#0f172a', color: '#ffffff' }}>
-                      <td style={{ padding: '12px 18px', fontWeight: 900, fontSize: '1.1rem' }}>GRAND TOTAL</td>
+                      <td style={{ padding: '12px 15px', fontWeight: 900, fontSize: '1.1rem' }}>GRAND TOTAL</td>
                       <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem' }}>{reportModal.data.reduce((s, a) => s + a.strength, 0)}</td>
                       <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem' }}>{reportModal.data.reduce((s, a) => s + a.present, 0)}</td>
                       <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', color: getStatusColor(getPercentage(reportModal.data.reduce((s, a) => s + a.present, 0), reportModal.data.reduce((s, a) => s + a.strength, 0))) }}>

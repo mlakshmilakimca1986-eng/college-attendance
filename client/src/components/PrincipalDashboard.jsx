@@ -24,6 +24,7 @@ export default function PrincipalDashboard() {
   const [isFinalized, setIsFinalized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
   const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [reportModal, setReportModal] = useState({ isOpen: false });
 
@@ -97,6 +98,9 @@ export default function PrincipalDashboard() {
 
   const handleInputChange = (id, field, value) => {
     if (isFinalized) return;
+    // Strictly prevent negative numbers
+    if (value !== "" && parseInt(value) < 0) return;
+    
     const newData = { ...data, [id]: { ...data[id], [field]: value } };
     setData(newData);
     autoSave(newData, date);
@@ -106,7 +110,8 @@ export default function PrincipalDashboard() {
     setModal({ isOpen: true, title, message, type });
   };
 
-  const finalizeReport = async () => {
+   const finalizeReport = async () => {
+    setIsFinalizing(true);
     try {
       const token = localStorage.getItem('token');
       const formattedData = Object.keys(data).map(key => {
@@ -133,6 +138,8 @@ export default function PrincipalDashboard() {
       showModal('Submitted', 'Entries with data have been locked. You can still fill remaining empty sections.', 'success');
     } catch (err) {
       showModal('Action Denied', err.response?.data || 'Finalize failed.', 'error');
+    } finally {
+      setIsFinalizing(false);
     }
   };
 
@@ -213,8 +220,14 @@ export default function PrincipalDashboard() {
           <button onClick={() => setReportModal({ isOpen: true })} className="btn btn-ghost" style={{ gap: '0.4rem', background: '#f5f3ff', color: '#6d28d9', fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}>
             <Eye size={16} /> Preview
           </button>
-          <button onClick={finalizeReport} className="btn btn-primary" style={{ gap: '0.4rem', fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}>
-            <Send size={16} /> Finalize
+          <button 
+            onClick={finalizeReport} 
+            className="btn btn-primary" 
+            style={{ gap: '0.4rem', fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+            disabled={isFinalizing}
+          >
+            {isFinalizing ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            {isFinalizing ? 'Finalizing...' : 'Finalize'}
           </button>
           <button onClick={Logout} className="btn btn-ghost" style={{ gap: '0.4rem', border: 'none', color: '#be123c', background: '#fff1f2', fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}>
             <LogOut size={16} /> Logout
@@ -277,6 +290,7 @@ export default function PrincipalDashboard() {
                           onChange={(e) => handleInputChange(id, 'strength', e.target.value)}
                           disabled={data[id]?.finalized}
                           placeholder="STR"
+                          min="0"
                         />
                       </td>
                       <td style={{ textAlign: 'center' }}>
@@ -286,6 +300,7 @@ export default function PrincipalDashboard() {
                           onChange={(e) => handleInputChange(id, 'present', e.target.value)}
                           disabled={data[id]?.finalized}
                           placeholder="PRE"
+                          min="0"
                         />
                       </td>
                       <td style={{ textAlign: 'center' }}>
@@ -321,33 +336,33 @@ export default function PrincipalDashboard() {
               <button onClick={() => setReportModal({ isOpen: false })} className="btn btn-ghost" style={{ padding: '0.5rem' }}>✕</button>
             </div>
 
-            <div id="report-content" style={{ padding: '0.2rem', background: '#fff' }}>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.8rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '0.5rem' }}>
-                  <img src="/logo.png" alt="Logo" style={{ height: '40px' }} />
+            <div id="report-content" style={{ padding: '8mm', background: '#fff' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1.2rem', borderBottom: '3px solid #f1f5f9', paddingBottom: '0.8rem' }}>
+                  <img src="/logo.png" alt="Logo" style={{ height: '50px' }} />
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', color: '#0f172a', margin: 0, fontWeight: 900 }}>{localStorage.getItem('name')}</h2>
-                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0, fontWeight: 700, letterSpacing: '0.5px' }}>OFFICIAL ATTENDANCE RECORD — {formatDate(date)}</p>
+                    <h2 style={{ fontSize: '1.6rem', color: '#0f172a', margin: 0, fontWeight: 900, textTransform: 'uppercase' }}>{localStorage.getItem('name')}</h2>
+                    <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0, fontWeight: 700, letterSpacing: '0.8px' }}>OFFICIAL ATTENDANCE RECORD — {formatDate(date)}</p>
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '0.8rem' }}>
-                  <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                    <p style={{ fontSize: '0.55rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Strength</p>
-                    <h3 style={{ fontSize: '1.1rem', margin: '2px 0' }}>{calculateTotal('strength')}</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', marginBottom: '1.2rem' }}>
+                  <div style={{ background: '#f8fafc', padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Strength</p>
+                    <h3 style={{ fontSize: '1.6rem', margin: '4px 0', fontWeight: 900 }}>{calculateTotal('strength')}</h3>
                   </div>
-                  <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                    <p style={{ fontSize: '0.55rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Present</p>
-                    <h3 style={{ fontSize: '1.1rem', margin: '2px 0' }}>{calculateTotal('present')}</h3>
+                  <div style={{ background: '#f8fafc', padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Grand Present</p>
+                    <h3 style={{ fontSize: '1.6rem', margin: '4px 0', fontWeight: 900 }}>{calculateTotal('present')}</h3>
                   </div>
                   <div style={{ 
                     background: '#f8fafc', 
-                    padding: '0.4rem 0.6rem', 
-                    borderRadius: '6px', 
-                    border: `1.5px solid ${getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength')))}` 
+                    padding: '0.8rem', 
+                    borderRadius: '8px', 
+                    border: `2px solid ${getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength')))}` 
                   }}>
-                    <p style={{ fontSize: '0.55rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Total Percentage</p>
-                    <h3 style={{ fontSize: '1.1rem', margin: '2px 0', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Total Percentage</p>
+                    <h3 style={{ fontSize: '1.6rem', margin: '4px 0', fontWeight: 900, color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
                       {getPercentage(calculateTotal('present'), calculateTotal('strength'))}%
                     </h3>
                   </div>
@@ -356,23 +371,23 @@ export default function PrincipalDashboard() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'left', padding: '6px', fontSize: '0.65rem', borderBottom: '2px solid #e2e8f0' }}>Stream / Group</th>
-                      <th style={{ textAlign: 'center', padding: '6px', fontSize: '0.65rem', borderBottom: '2px solid #e2e8f0' }}>Str</th>
-                      <th style={{ textAlign: 'center', padding: '6px', fontSize: '0.65rem', borderBottom: '2px solid #e2e8f0' }}>Pre</th>
-                      <th style={{ textAlign: 'center', padding: '6px', fontSize: '0.65rem', borderBottom: '2px solid #e2e8f0' }}>%</th>
+                      <th style={{ textAlign: 'left', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
+                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STR</th>
+                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>PRE</th>
+                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
                     </tr>
                   </thead>
                   <tbody>
                     {Object.keys(STREAMS).map(streamGroup => {
                       const groupSects = STREAMS[streamGroup].filter(sect => {
                         const id = `${streamGroup}|${sect}`;
-                        return data[id]?.strength && data[id]?.present;
+                        return data[id]?.strength || data[id]?.present;
                       });
                       if (groupSects.length === 0) return null;
                       return (
                         <React.Fragment key={streamGroup}>
                           <tr>
-                            <td colSpan="4" style={{ background: '#f8fafc', fontWeight: 900, color: '#4f46e5', fontSize: '0.85rem', padding: '6px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #e2e8f0' }}>
+                            <td colSpan="4" style={{ background: '#f1f5f9', fontWeight: 900, color: '#4f46e5', fontSize: '1rem', padding: '10px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1px solid #e2e8f0' }}>
                               {streamGroup}
                             </td>
                           </tr>
@@ -380,10 +395,10 @@ export default function PrincipalDashboard() {
                             const id = `${streamGroup}|${sect}`;
                             return (
                               <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                <td style={{ paddingLeft: '10px', fontWeight: 900, fontSize: '0.75rem', padding: '4px', color: '#0f172a' }}>{sect}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 900, color: '#0f172a' }}>{data[id].strength}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 900, color: '#0f172a' }}>{data[id].present}</td>
-                                <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.75rem', color: getStatusColor(getPercentage(data[id].present, data[id].strength)) }}>
+                                <td style={{ paddingLeft: '15px', fontWeight: 700, fontSize: '0.95rem', padding: '6px', color: '#0f172a' }}>{sect}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{data[id].strength || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{data[id].present || 0}</td>
+                                <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.95rem', color: getStatusColor(getPercentage(data[id].present, data[id].strength)) }}>
                                   {getPercentage(data[id].present, data[id].strength)}%
                                 </td>
                               </tr>
@@ -395,10 +410,10 @@ export default function PrincipalDashboard() {
                   </tbody>
                   <tfoot>
                     <tr style={{ background: '#0f172a', color: '#ffffff' }}>
-                      <td style={{ padding: '8px 12px', fontWeight: 900, fontSize: '0.9rem' }}>GRAND TOTAL</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem' }}>{calculateTotal('strength')}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem' }}>{calculateTotal('present')}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
+                      <td style={{ padding: '12px 15px', fontWeight: 900, fontSize: '1.1rem' }}>GRAND TOTAL</td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem' }}>{calculateTotal('strength')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem' }}>{calculateTotal('present')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
                         {getPercentage(calculateTotal('present'), calculateTotal('strength'))}%
                       </td>
                     </tr>
