@@ -105,17 +105,20 @@ export default function PrincipalDashboard() {
     // Strictly prevent negative numbers
     if (value !== "" && parseInt(value) < 0) return;
     
-    const oldRow = data[id];
+    const oldRow = data[id] || {};
     const newRow = { ...oldRow, [field]: value };
     
-    // Calculate overall totals
-    const cs = parseInt(field === 'cbse_strength' ? value : newRow.cbse_strength) || 0;
-    const cp = parseInt(field === 'cbse_present' ? value : newRow.cbse_present) || 0;
-    const ps = parseInt(field === 'pu_strength' ? value : newRow.pu_strength) || 0;
-    const pp = parseInt(field === 'pu_present' ? value : newRow.pu_present) || 0;
-    
-    newRow.strength = cs + ps || '';
-    newRow.present = cp + pp || '';
+    // Only calculate overall totals for Senior branches (CBSE + PU)
+    const [stream] = id.split('|');
+    if (stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') {
+      const cs = parseInt(field === 'cbse_strength' ? value : (newRow.cbse_strength || 0)) || 0;
+      const cp = parseInt(field === 'cbse_present' ? value : (newRow.cbse_present || 0)) || 0;
+      const ps = parseInt(field === 'pu_strength' ? value : (newRow.pu_strength || 0)) || 0;
+      const pp = parseInt(field === 'pu_present' ? value : (newRow.pu_present || 0)) || 0;
+      
+      newRow.strength = cs + ps;
+      newRow.present = cp + pp;
+    }
 
     const newData = { ...data, [id]: newRow };
     setData(newData);
