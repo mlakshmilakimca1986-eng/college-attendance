@@ -342,12 +342,18 @@ export default function PrincipalDashboard() {
         <table>
           <thead>
             <tr style={{ background: '#f8fafc' }}>
-              <th style={{ textAlign: 'left', padding: '1rem', borderRight: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Stream / Section</th>
-              <th colSpan="2" style={{ textAlign: 'center', color: '#6366f1', fontSize: '0.7rem', fontWeight: 900 }}>CBSE</th>
-              <th colSpan="2" style={{ textAlign: 'center', color: '#ec4899', fontSize: '0.7rem', fontWeight: 900 }}>PU</th>
-              <th style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.75rem' }}>TOTAL</th>
-              <th style={{ textAlign: 'center', color: '#64748b', fontSize: '0.75rem' }}>%</th>
-              <th style={{ textAlign: 'center', color: '#64748b', fontSize: '0.75rem' }}>STATUS</th>
+              <th rowSpan="2" style={{ textAlign: 'left', padding: '1rem', borderRight: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', width: '25%' }}>Stream / Section</th>
+              <th colSpan="2" style={{ textAlign: 'center', borderBottom: '1px solid #e2e8f0', color: '#6366f1', fontSize: '0.75rem', fontWeight: 900, background: '#f5f3ff' }}>CBSE BRANCH</th>
+              <th colSpan="2" style={{ textAlign: 'center', borderBottom: '1px solid #e2e8f0', color: '#ec4899', fontSize: '0.75rem', fontWeight: 900, background: '#fdf2f8' }}>PU BRANCH</th>
+              <th rowSpan="2" style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.75rem' }}>TOTAL</th>
+              <th rowSpan="2" style={{ textAlign: 'center', color: '#64748b', fontSize: '0.75rem' }}>%</th>
+              <th rowSpan="2" style={{ textAlign: 'center', color: '#64748b', fontSize: '0.75rem' }}>STATUS</th>
+            </tr>
+            <tr style={{ background: '#f8fafc' }}>
+              <th style={{ textAlign: 'center', padding: '0.4rem', color: '#6366f1', fontSize: '0.65rem', fontWeight: 800 }}>STR</th>
+              <th style={{ textAlign: 'center', padding: '0.4rem', color: '#6366f1', fontSize: '0.65rem', fontWeight: 800 }}>PRE</th>
+              <th style={{ textAlign: 'center', padding: '0.4rem', color: '#ec4899', fontSize: '0.65rem', fontWeight: 800 }}>STR</th>
+              <th style={{ textAlign: 'center', padding: '0.4rem', color: '#ec4899', fontSize: '0.65rem', fontWeight: 800 }}>PRE</th>
             </tr>
           </thead>
           <tbody>
@@ -355,11 +361,19 @@ export default function PrincipalDashboard() {
               <React.Fragment key={stream}>
                   <tr key={stream}>
                     <td colSpan="8" style={{ background: 'linear-gradient(90deg, #f8fafc, #f1f5f9)', padding: '0.8rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                        <div style={{ padding: '4px 12px', background: '#4f46e5', color: '#fff', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '1px' }}>
-                          {stream} {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') ? '(CBSE & PU)' : ''}
+                      <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                        <div style={{ padding: '4px 12px', background: '#4f46e5', color: '#fff', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '1px', whiteSpace: 'nowrap' }}>
+                          {stream}
                         </div>
-                        <div style={{ height: '2px', flex: 1, background: 'rgba(79, 70, 229, 0.1)', borderRadius: '2px' }}></div>
+                        <div style={{ marginLeft: '12%', display: 'flex', gap: '3.5rem', opacity: 0.8 }}>
+                          {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') && (
+                            <>
+                              <span style={{ fontSize: '0.6rem', fontWeight: 900, color: '#6366f1', textTransform: 'uppercase' }}>← CBSE BRANCH</span>
+                              <span style={{ fontSize: '0.6rem', fontWeight: 900, color: '#ec4899', textTransform: 'uppercase' }}>PU BRANCH →</span>
+                            </>
+                          )}
+                        </div>
+                        <div style={{ height: '2px', flex: 1, background: 'rgba(79, 70, 229, 0.1)', borderRadius: '2px', marginLeft: '1rem' }}></div>
                       </div>
                     </td>
                   </tr>
@@ -370,43 +384,43 @@ export default function PrincipalDashboard() {
                       <td style={{ paddingLeft: '3rem', fontWeight: 700 }}>{section}</td>
                       {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') ? (
                         <>
-                          <td style={{ textAlign: 'center' }}>
+                          <td style={{ textAlign: 'center', background: '#f5f3ff' }}>
                             <input 
-                              type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#6366f1' }} 
+                              type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#6366f1' }} 
                               value={data[id]?.cbse_strength || ''} 
                               onChange={(e) => handleInputChange(id, 'cbse_strength', e.target.value)}
                               disabled={data[id]?.finalized}
-                              placeholder="STR"
+                              placeholder="CBSE STR"
                               min="0"
                             />
                           </td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td style={{ textAlign: 'center', background: '#f5f3ff' }}>
                             <input 
-                              type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#6366f1' }} 
+                              type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#6366f1' }} 
                               value={data[id]?.cbse_present || ''} 
                               onChange={(e) => handleInputChange(id, 'cbse_present', e.target.value)}
                               disabled={data[id]?.finalized}
-                              placeholder="PRE"
+                              placeholder="CBSE PRE"
                               min="0"
                             />
                           </td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td style={{ textAlign: 'center', background: '#fdf2f8' }}>
                             <input 
-                              type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#ec4899' }} 
+                              type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#ec4899' }} 
                               value={data[id]?.pu_strength || ''} 
                               onChange={(e) => handleInputChange(id, 'pu_strength', e.target.value)}
                               disabled={data[id]?.finalized}
-                              placeholder="STR"
+                              placeholder="PU STR"
                               min="0"
                             />
                           </td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td style={{ textAlign: 'center', background: '#fdf2f8' }}>
                             <input 
-                              type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#ec4899' }} 
+                              type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#ec4899' }} 
                               value={data[id]?.pu_present || ''} 
                               onChange={(e) => handleInputChange(id, 'pu_present', e.target.value)}
                               disabled={data[id]?.finalized}
-                              placeholder="PRE"
+                              placeholder="PU PRE"
                               min="0"
                             />
                           </td>

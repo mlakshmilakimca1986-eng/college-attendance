@@ -491,11 +491,17 @@ export default function AdminDashboard() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'left', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
-                      <th style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#6366f1' }}>CBSE</th>
-                      <th style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#ec4899' }}>PU</th>
-                      <th style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>TOT</th>
-                      <th style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
+                      <th rowSpan="2" style={{ textAlign: 'left', padding: '10px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0', color: '#64748b', textTransform: 'uppercase', width: '25%' }}>STREAM / GROUP</th>
+                      <th colSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.75rem', borderBottom: '1px solid #e2e8f0', color: '#6366f1', background: '#f5f3ff', fontWeight: 900 }}>CBSE</th>
+                      <th colSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.75rem', borderBottom: '1px solid #e2e8f0', color: '#ec4899', background: '#fdf2f8', fontWeight: 900 }}>PU</th>
+                      <th rowSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>TOT</th>
+                      <th rowSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.75rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
+                    </tr>
+                    <tr style={{ background: '#f8fafc' }}>
+                      <th style={{ textAlign: 'center', padding: '4px', fontSize: '0.65rem', color: '#6366f1', background: '#f5f3ff' }}>STR</th>
+                      <th style={{ textAlign: 'center', padding: '4px', fontSize: '0.65rem', color: '#6366f1', background: '#f5f3ff' }}>PRE</th>
+                      <th style={{ textAlign: 'center', padding: '4px', fontSize: '0.65rem', color: '#ec4899', background: '#fdf2f8' }}>STR</th>
+                      <th style={{ textAlign: 'center', padding: '4px', fontSize: '0.65rem', color: '#ec4899', background: '#fdf2f8' }}>PRE</th>
                     </tr>
                   </thead>
                   <tbody>
