@@ -502,8 +502,14 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
         await workbook.xlsx.readFile(path.join(__dirname, 'template_consolidated.xlsx'));
         const formatSheet = workbook.getWorksheet('Format-Blr');
         
-        const [dPart, mPart, yPart] = targetDate.split('-').reverse();
-        const formattedDate = `${yPart}-${mPart}-${dPart}`;
+        const dateParts = targetDate.split('-');
+        let formattedDateForFile = targetDate;
+        if (dateParts.length === 3) {
+            // Convert YYYY-MM-DD to DD-MM-YYYY for the filename
+            if (dateParts[0].length === 4) {
+                formattedDateForFile = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+            }
+        }
         
         // Helper to convert col index to letter
         const getCol = (idx) => {
@@ -623,7 +629,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
         }
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename="${formattedDate}_STREAM-WISE_DAILY_ATTENDANCE.xlsx"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${formattedDateForFile}_STREAM-WISE_DAILY_ATTENDANCE.xlsx"`);
         await workbook.xlsx.write(res);
         res.end();
     } catch (err) {

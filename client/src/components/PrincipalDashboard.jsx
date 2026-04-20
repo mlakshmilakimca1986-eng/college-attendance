@@ -215,11 +215,19 @@ export default function PrincipalDashboard() {
   const handleDownloadPDF = () => {
     const element = document.getElementById('report-content');
     const opt = {
-      margin: [3, 5, 3, 5],
-      filename: `${formatDate(date)}_${localStorage.getItem('name') || 'CAMPUS'}_COLLEGE ATTENDANCE.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      margin: 10,
+      filename: `${formatDate(date)}_${localStorage.getItem('name') || 'CAMPUS'}_REPORT.pdf`,
+      image: { type: 'png', quality: 1.0 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        letterRendering: true,
+        scrollY: 0,
+        scrollX: 0,
+        windowHeight: element.scrollHeight
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
     window.html2pdf().from(element).set(opt).save();
   };
