@@ -522,25 +522,11 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             return letter;
         };
 
-        // Targeted Initialization: ONLY clear input columns to avoid breaking formulas and keep file clean
-        const initRange = (start, count) => {
-            for (let r = start; r < start + count; r++) {
-                const row = formatSheet.getRow(r);
-                if (row.getCell(2).text) {
-                    // Specific Input Column IDs
-                    const inputCols = [
-                        5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 
-                        40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62,63,64, 68,69,70,71,
-                        84,85, 87,88, 90,91, 93,94, 104,105
-                    ];
-                    inputCols.forEach(c => {
-                        row.getCell(c).value = 0;
-                    });
-                }
-            }
-        };
-        initRange(7, 38);
-        initRange(51, 38);
+        const inputCols = [
+            5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 
+            40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62,63,64, 68,69,70,71,
+            84,85, 87,88, 90,91, 93,94, 104,105
+        ];
 
         // Populate Format-Blr
         for (const user of userList) {
@@ -560,6 +546,9 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
 
             if (incRowIdx) {
                 const row = formatSheet.getRow(incRowIdx);
+                // Clear row's inputs first
+                inputCols.forEach(c => row.getCell(c).value = 0);
+
                 userAttendance.filter(a => a.branch === 'INCOMING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["INCOMING SENIORS"]?.[item.stream];
                     if (baseCol) {
@@ -567,7 +556,6 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                         row.getCell(baseCol + 1).value = item.cbse_present || 0;
                         row.getCell(baseCol + 2).value = item.pu_strength || 0;
                         row.getCell(baseCol + 3).value = item.pu_present || 0;
-                        // Formulas (TOT, PRE, %) are already in template, we don't touch them
                     }
                 });
                 
@@ -589,11 +577,13 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     row.getCell(104).value = item.strength || 0;
                     row.getCell(105).value = item.present || 0;
                 });
-                // No row.commit() needed for worksheet rows
             }
 
             if (outRowIdx) {
                 const row = formatSheet.getRow(outRowIdx);
+                // Clear row's inputs first
+                inputCols.forEach(c => row.getCell(c).value = 0);
+
                 userAttendance.filter(a => a.branch === 'OUTGOING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["OUTGOING SENIORS"]?.[item.stream];
                     if (baseCol) {
