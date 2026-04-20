@@ -473,11 +473,11 @@ app.get('/api/attendance/export-excel', auth, async (req, res) => {
 const consolidatedMapping = {
     "INCOMING SENIORS": {
         "Super60(N)": 5, "Super60(S)": 12, "Elite(C-120)": 19, "S60(Star)": 26, "C120(Star)": 33,
-        "JEE Apex": 40, "Elite": 47, "AIIMS S60": 54, "NEET Wisdom": 61, "ELITE & AIIMS S60 (Star)": 68
+        "JEE Apex": 40, "MPL-ELITE": 47, "AIIMS S60": 54, "NEET Wisdom": 61, "Sr.ELITE & AS60 (Star)": 68
     },
     "OUTGOING SENIORS": {
         "Super60(N)": 5, "Super60(S)": 12, "Elite(C-120)": 19, "S60(Star)": 26, "C120(Star)": 33,
-        "JEE Apex": 40, "Elite": 47, "AIIMS S60": 54, "NEET Wisdom": 61, "ELITE & AIIMS S60 (Star)": 68
+        "JEE Apex (2Hrs)": 40, "MPL-ELITE": 47, "AIIMS S60": 54, "NEET Wisdom (2Hrs)": 61, "Sr.ELITE & AS60 (Star)": 68
     }
 };
 
