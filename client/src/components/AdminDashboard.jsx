@@ -41,8 +41,11 @@ export default function AdminDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const getPercentage = (p, s) => {
-    if (!s || s === 0) return 0;
-    return ((p / s) * 100).toFixed(1);
+    const present = parseFloat(p) || 0;
+    const strength = parseFloat(s) || 0;
+    if (strength === 0) return 0;
+    const pct = ((present / strength) * 100).toFixed(1);
+    return isNaN(pct) ? 0 : pct;
   };
 
   const getStatusColor = (pct) => {
