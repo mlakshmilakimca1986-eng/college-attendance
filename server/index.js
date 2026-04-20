@@ -578,11 +578,13 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                 });
                 // Junior classes (CO-IPL) - Using incRow row
                 userAttendance.filter(a => a.branch === 'CO-IPL').forEach(item => {
-                    let col;
-                    if (item.stream === '7th Class') col = 84;
-                    else if (item.stream === '8th Class') col = 87;
-                    else if (item.stream === '9th Class') col = 90;
-                    else if (item.stream === '10th Class') col = 93;
+                    let col = null;
+                    const sName = item.stream?.toUpperCase() || "";
+                    if (sName.includes('7TH')) col = 84;
+                    else if (sName.includes('8TH')) col = 87;
+                    else if (sName.includes('9TH')) col = 90;
+                    else if (sName.includes('10TH')) col = 93;
+                    
                     if (col) {
                         row.getCell(col).value = item.strength || 0;
                         row.getCell(col + 1).value = item.present || 0;
