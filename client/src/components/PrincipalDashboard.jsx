@@ -344,16 +344,9 @@ export default function PrincipalDashboard() {
           <tbody>
             {Object.keys(STREAMS).map(stream => (
               <React.Fragment key={stream}>
-                  <tr key={stream + '_title'}>
-                    <td colSpan="8" style={{ background: '#fff', padding: '1.5rem 1.5rem 0.5rem 1.5rem', border: 'none' }}>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1e293b', borderLeft: '4px solid #4f46e5', paddingLeft: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        {stream}
-                      </div>
-                    </td>
-                  </tr>
                   {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') ? (
                     <tr key={stream + '_heading'} style={{ background: '#f8fafc' }}>
-                      <th style={{ width: '25%', padding: '0.5rem 1.5rem' }}></th>
+                      <th style={{ width: '25%', padding: '1rem', textAlign: 'left', borderLeft: '4px solid #4f46e5', color: '#1e293b', fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase' }}>{stream}</th>
                       <th colSpan="2" style={{ textAlign: 'center', color: '#6366f1', fontSize: '0.75rem', fontWeight: 900, background: '#f5f3ff', borderBottom: '2px solid #e0e7ff' }}>CBSE</th>
                       <th colSpan="2" style={{ textAlign: 'center', color: '#ec4899', fontSize: '0.75rem', fontWeight: 900, background: '#fdf2f8', borderBottom: '2px solid #fce7f3' }}>PU</th>
                       <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>TOTAL</th>
@@ -363,17 +356,17 @@ export default function PrincipalDashboard() {
                   ) : null}
                   {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') ? (
                     <tr key={stream + '_subheading'} style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                      <th style={{ padding: '0.2rem' }}></th>
+                      <th style={{ padding: '0.2rem', background: '#fff' }}></th>
                       <th style={{ textAlign: 'center', fontSize: '0.6rem', color: '#6366f1', padding: '0.3rem', background: '#f5f3ff' }}>STR</th>
                       <th style={{ textAlign: 'center', fontSize: '0.6rem', color: '#6366f1', padding: '0.3rem', background: '#f5f3ff' }}>PRE</th>
                       <th style={{ textAlign: 'center', fontSize: '0.6rem', color: '#ec4899', padding: '0.3rem', background: '#fdf2f8' }}>STR</th>
                       <th style={{ textAlign: 'center', fontSize: '0.6rem', color: '#ec4899', padding: '0.3rem', background: '#fdf2f8' }}>PRE</th>
-                      <th colSpan="3"></th>
+                      <th colSpan="3" style={{ background: '#fff' }}></th>
                     </tr>
                   ) : null}
                   {(stream !== 'INCOMING SENIORS' && stream !== 'OUTGOING SENIORS') ? (
                     <tr key={stream + '_junior_heading'} style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                      <th style={{ width: '25%' }}></th>
+                      <th style={{ width: '25%', padding: '1rem', textAlign: 'left', borderLeft: '4px solid #4f46e5', color: '#1e293b', fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase' }}>{stream}</th>
                       <th colSpan="2" style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>STR | PRE</th>
                       <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>TOTAL</th>
                       <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>%</th>
