@@ -234,9 +234,35 @@ export default function AdminDashboard() {
               }
             }} 
             className="btn btn-primary" 
-            style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#3b82f6', borderColor: '#3b82f6' }}
           >
-            <Download size={16} /> Excel
+            <Download size={16} /> COLLEGE ATTENDANCE
+          </button>
+          <button 
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/export-consolidated?date=${selectedDate}&admin=true`, {
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                if(!res.ok) throw new Error('Download failed');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const parts = selectedDate.split('-');
+                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_STREAM-WISE_DAILY_ATTENDANCE.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+              } catch (e) {
+                showModal('Error', 'Failed to export consolidated excel file.', 'error');
+              }
+            }} 
+            className="btn btn-primary" 
+            style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981' }}
+          >
+            <Download size={16} /> STREAM-WISE DAILY ATTENDANCE
           </button>
           <button onClick={() => setView('approvals')} className={`btn ${view === 'approvals' ? 'btn-primary' : 'btn-ghost'}`} style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem' }}>
             <CheckCircle size={16} /> Approvals {pendingApprovals.length > 0 && <span className="badge badge-pending" style={{ marginLeft: '5px' }}>{pendingApprovals.length}</span>}
@@ -464,33 +490,49 @@ export default function AdminDashboard() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'left', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
-                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STR</th>
-                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>PRE</th>
-                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
+                      <th rowSpan="2" style={{ textAlign: 'left', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
+                      <th colSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '1px solid #e2e8f0', color: '#6366f1' }}>CBSE</th>
+                      <th colSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '1px solid #e2e8f0', color: '#ec4899' }}>PU</th>
+                      <th rowSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>TOT</th>
+                      <th rowSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
+                    </tr>
+                    <tr style={{ background: '#f8fafc' }}>
+                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#6366f1' }}>S</th>
+                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#6366f1' }}>P</th>
+                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#ec4899' }}>S</th>
+                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#ec4899' }}>P</th>
                     </tr>
                   </thead>
                   <tbody>
                     {Object.keys(STREAMS).map(streamGroup => {
-                      const groupRows = reportModal.data.filter(r => r.branch === streamGroup);
-                      if (groupRows.length === 0) return null;
+                      const groupSects = STREAMS[streamGroup].filter(sect => {
+                        const found = reportModal.data.find(d => d.stream === sect && d.branch === streamGroup);
+                        return found && (found.strength || found.present);
+                      });
+                      if (groupSects.length === 0) return null;
                       return (
                         <React.Fragment key={streamGroup}>
                           <tr>
-                            <td colSpan="4" style={{ background: '#f1f5f9', fontWeight: 900, color: '#4f46e5', fontSize: '1rem', padding: '10px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1px solid #e2e8f0' }}>
+                            <td colSpan="7" style={{ background: '#f1f5f9', fontWeight: 900, color: '#4f46e5', fontSize: '0.8rem', padding: '6px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #e2e8f0' }}>
                               {streamGroup}
                             </td>
                           </tr>
-                          {groupRows.map((row, idx) => (
-                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                              <td style={{ paddingLeft: '15px', fontWeight: 700, fontSize: '0.95rem', padding: '6px', color: '#0f172a' }}>{row.stream}</td>
-                              <td style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{row.strength}</td>
-                              <td style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{row.present}</td>
-                              <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.95rem', color: getStatusColor(getPercentage(row.present, row.strength)) }}>
-                                {getPercentage(row.present, row.strength)}%
-                              </td>
-                            </tr>
-                          ))}
+                          {groupSects.map((sect, idx) => {
+                            const found = reportModal.data.find(d => d.stream === sect && d.branch === streamGroup);
+                            return (
+                              <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <td style={{ paddingLeft: '10px', fontWeight: 700, fontSize: '0.75rem', padding: '4px', color: '#0f172a' }}>{sect}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{found.cbse_strength || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{found.cbse_present || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{found.pu_strength || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{found.pu_present || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 800, color: '#0f172a' }}>{found.present || 0}</td>
+                                <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.75rem', color: getStatusColor(getPercentage(found.present, found.strength)) }}>
+                                  {getPercentage(found.present, found.strength)}%
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </React.Fragment>
                       );
                     })}

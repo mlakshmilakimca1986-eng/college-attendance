@@ -88,26 +88,46 @@ app.post('/api/attendance/save', auth, async (req, res) => {
         const params = [];
         
         for (const item of data) {
-            const isEntryFinalized = (finalize && (item.strength || item.present)) ? 1 : 0;
-            values.push('(?, ?, ?, ?, ?, ?, ?)');
+            const cb_s = parseInt(item.cbse_strength) || 0;
+            const cb_p = parseInt(item.cbse_present) || 0;
+            const pu_s = parseInt(item.pu_strength) || 0;
+            const pu_p = parseInt(item.pu_present) || 0;
+            
+            const total_s = cb_s + pu_s;
+            const total_p = cb_p + pu_p;
+
+            const isEntryFinalized = (finalize && (total_s > 0 || total_p > 0)) ? 1 : 0;
+            
+            values.push('(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             params.push(
                 req.user.id, 
                 date, 
                 item.branch, 
                 item.stream, 
-                item.strength || 0, 
-                item.present || 0, 
-                isEntryFinalized
+                total_s, 
+                total_p, 
+                isEntryFinalized,
+                cb_s,
+                cb_p,
+                pu_s,
+                pu_p
             );
         }
 
         const sql = `
-            INSERT INTO attendance_data (principal_id, date, branch, stream, strength, present, finalized) 
+            INSERT INTO attendance_data (
+                principal_id, date, branch, stream, strength, present, finalized,
+                cbse_strength, cbse_present, pu_strength, pu_present
+            ) 
             VALUES ${values.join(',')}
             ON DUPLICATE KEY UPDATE 
                 strength = VALUES(strength), 
                 present = VALUES(present), 
-                finalized = CASE WHEN finalized = 1 THEN 1 ELSE VALUES(finalized) END
+                finalized = CASE WHEN finalized = 1 THEN 1 ELSE VALUES(finalized) END,
+                cbse_strength = VALUES(cbse_strength),
+                cbse_present = VALUES(cbse_present),
+                pu_strength = VALUES(pu_strength),
+                pu_present = VALUES(pu_present)
         `;
 
         await pool.query(sql, params);
@@ -444,6 +464,120 @@ app.get('/api/attendance/export-excel', auth, async (req, res) => {
     }
 });
 
+
+// Helper to map stream blocks in Format-Blr
+const consolidatedMapping = {
+    "INCOMING SENIORS": {
+        "Super60(N)": 5, "Super60(S)": 12, "Elite(C-120)": 19, "S60(Star)": 26, "C120(Star)": 33,
+        "JEE Apex": 40, "Elite": 47, "AIIMS S60": 54, "NEET Wisdom": 61, "ELITE & AIIMS S60 (Star)": 68
+    },
+    "OUTGOING SENIORS": {
+        "Super60(N)": 5, "Super60(S)": 12, "Elite(C-120)": 19, "S60(Star)": 26, "C120(Star)": 33,
+        "JEE Apex": 40, "Elite": 47, "AIIMS S60": 54, "NEET Wisdom": 61, "ELITE & AIIMS S60 (Star)": 68
+    }
+};
+
+app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
+    const { date, admin } = req.query;
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    try {
+        let attendance, userList;
+        if (req.user.role === 'admin' && admin === 'true') {
+            [userList] = await pool.query('SELECT id, principal_name FROM users WHERE role = "principal" AND is_approved = TRUE');
+            [attendance] = await pool.query('SELECT * FROM attendance_data WHERE date = ? AND finalized = 1', [targetDate]);
+        } else {
+            const [users] = await pool.query('SELECT id, principal_name FROM users WHERE id = ?', [req.user.id]);
+            userList = users;
+            [attendance] = await pool.query('SELECT * FROM attendance_data WHERE principal_id = ? AND date = ?', [req.user.id, targetDate]);
+        }
+        
+        if (userList.length === 0) return res.status(404).send('No data found');
+
+        const path = require('path');
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(path.join(__dirname, 'template_consolidated.xlsx'));
+        const formatSheet = workbook.getWorksheet('Format-Blr');
+        
+        const [dPart, mPart, yPart] = targetDate.split('-').reverse();
+        const formattedDate = `${yPart}-${mPart}-${dPart}`;
+        
+        // Populate Format-Blr
+        for (const user of userList) {
+            const campusName = user.principal_name.toUpperCase();
+            const userAttendance = attendance.filter(a => a.principal_id === user.id);
+            
+            // Map campus to row in Format-Blr
+            // Incoming starts at 7, Outgoing starts at 51
+            const findRow = (start, count) => {
+                for (let r = start; r < start + count; r++) {
+                    const row = formatSheet.getRow(r);
+                    if (row.getCell(2).text.toUpperCase() === campusName) return r;
+                }
+                return null;
+            };
+
+            const incRowIdx = findRow(7, 38);
+            const outRowIdx = findRow(51, 38);
+
+            if (incRowIdx) {
+                const row = formatSheet.getRow(incRowIdx);
+                userAttendance.filter(a => a.branch === 'INCOMING SENIORS').forEach(item => {
+                    const baseCol = consolidatedMapping["INCOMING SENIORS"][item.stream];
+                    if (baseCol) {
+                        row.getCell(baseCol).value = item.cbse_strength || 0;
+                        row.getCell(baseCol + 1).value = item.cbse_present || 0;
+                        row.getCell(baseCol + 2).value = item.pu_strength || 0;
+                        row.getCell(baseCol + 3).value = item.pu_present || 0;
+                        row.getCell(baseCol + 4).value = (item.cbse_strength || 0) + (item.pu_strength || 0);
+                        row.getCell(baseCol + 5).value = (item.cbse_present || 0) + (item.pu_present || 0);
+                    }
+                });
+                // Junior classes in Format-Blr
+                userAttendance.filter(a => a.branch === 'CO-IPL').forEach(item => {
+                    let col;
+                    if (item.stream === '7th Class') col = 84;
+                    else if (item.stream === '8th Class') col = 87;
+                    else if (item.stream === '9th Class') col = 90;
+                    else if (item.stream === '10th Class') col = 93;
+                    if (col) {
+                        row.getCell(col).value = item.strength || 0;
+                        row.getCell(col + 1).value = item.present || 0;
+                    }
+                });
+                row.commit();
+            }
+
+            if (outRowIdx) {
+                const row = formatSheet.getRow(outRowIdx);
+                userAttendance.filter(a => a.branch === 'OUTGOING SENIORS').forEach(item => {
+                    const baseCol = consolidatedMapping["OUTGOING SENIORS"][item.stream];
+                    if (baseCol) {
+                        row.getCell(baseCol).value = item.cbse_strength || 0;
+                        row.getCell(baseCol + 1).value = item.cbse_present || 0;
+                        row.getCell(baseCol + 2).value = item.pu_strength || 0;
+                        row.getCell(baseCol + 3).value = item.pu_present || 0;
+                        row.getCell(baseCol + 4).value = (item.cbse_strength || 0) + (item.pu_strength || 0);
+                        row.getCell(baseCol + 5).value = (item.cbse_present || 0) + (item.pu_present || 0);
+                    }
+                });
+                // LTC-VAIDYAH
+                userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
+                    row.getCell(104).value = item.strength || 0;
+                    row.getCell(105).value = item.present || 0;
+                });
+                row.commit();
+            }
+        }
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${formattedDate}_STREAM-WISE_DAILY_ATTENDANCE.xlsx"`);
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
 
 const port = process.env.PORT || 3002;
 app.listen(port, () => console.log(`Server running on port ${port}`));

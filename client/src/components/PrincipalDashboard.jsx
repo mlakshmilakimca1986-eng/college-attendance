@@ -55,6 +55,10 @@ export default function PrincipalDashboard() {
           );
 
           initialData[key] = { 
+            cbse_strength: existing ? existing.cbse_strength : '',
+            cbse_present: existing ? existing.cbse_present : '',
+            pu_strength: existing ? existing.pu_strength : '',
+            pu_present: existing ? existing.pu_present : '',
             strength: existing ? existing.strength : '', 
             present: existing ? existing.present : '',
             finalized: !!isLocked
@@ -101,7 +105,19 @@ export default function PrincipalDashboard() {
     // Strictly prevent negative numbers
     if (value !== "" && parseInt(value) < 0) return;
     
-    const newData = { ...data, [id]: { ...data[id], [field]: value } };
+    const oldRow = data[id];
+    const newRow = { ...oldRow, [field]: value };
+    
+    // Calculate overall totals
+    const cs = parseInt(field === 'cbse_strength' ? value : newRow.cbse_strength) || 0;
+    const cp = parseInt(field === 'cbse_present' ? value : newRow.cbse_present) || 0;
+    const ps = parseInt(field === 'pu_strength' ? value : newRow.pu_strength) || 0;
+    const pp = parseInt(field === 'pu_present' ? value : newRow.pu_present) || 0;
+    
+    newRow.strength = cs + ps || '';
+    newRow.present = cp + pp || '';
+
+    const newData = { ...data, [id]: newRow };
     setData(newData);
     autoSave(newData, date);
   };
@@ -116,7 +132,14 @@ export default function PrincipalDashboard() {
       const token = localStorage.getItem('token');
       const formattedData = Object.keys(data).map(key => {
         const [branch, stream] = key.split('|');
-        return { branch, stream, strength: data[key].strength, present: data[key].present };
+        return { 
+          branch, 
+          stream, 
+          cbse_strength: data[key].cbse_strength, 
+          cbse_present: data[key].cbse_present, 
+          pu_strength: data[key].pu_strength, 
+          pu_present: data[key].pu_present 
+        };
       });
 
       await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/save`, {
@@ -236,7 +259,7 @@ export default function PrincipalDashboard() {
                 const a = document.createElement('a');
                 a.href = url;
                 const parts = date.split('-');
-                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_Attendance.xlsx`;
+                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_COLLEGE ATTENDANCE.xlsx`;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -245,9 +268,35 @@ export default function PrincipalDashboard() {
               }
             }} 
             className="btn btn-primary" 
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', gap: '0.4rem', background: '#3b82f6', borderColor: '#3b82f6' }}
+          >
+            <Download size={16} /> COLLEGE ATTENDANCE
+          </button>
+          <button 
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/export-consolidated?date=${date}`, {
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                if(!res.ok) throw new Error('Download failed');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const parts = date.split('-');
+                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_STREAM-WISE_DAILY_ATTENDANCE.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+              } catch (e) {
+                showModal('Error', 'Failed to export consolidated excel file.', 'error');
+              }
+            }} 
+            className="btn btn-primary" 
             style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981' }}
           >
-            <Download size={16} /> Excel
+            <Download size={16} /> STREAM-WISE DAILY ATTENDANCE
           </button>
           <button 
             onClick={finalizeReport} 
@@ -293,19 +342,26 @@ export default function PrincipalDashboard() {
         )}
         <table>
           <thead>
-            <tr>
-              <th>Stream / Section</th>
-              <th style={{ textAlign: 'center' }}>Strength</th>
-              <th style={{ textAlign: 'center' }}>Present</th>
-              <th style={{ textAlign: 'center' }}>%</th>
-              <th style={{ textAlign: 'center' }}>Status</th>
+            <tr style={{ background: '#f8fafc' }}>
+              <th rowSpan="2" style={{ borderRight: '1px solid #e2e8f0' }}>Stream / Section</th>
+              <th colSpan="2" style={{ textAlign: 'center', borderBottom: '1px solid #e2e8f0', color: '#6366f1' }}>CBSE</th>
+              <th colSpan="2" style={{ textAlign: 'center', borderBottom: '1px solid #e2e8f0', color: '#ec4899' }}>PU</th>
+              <th rowSpan="2" style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0' }}>TOTAL</th>
+              <th rowSpan="2" style={{ textAlign: 'center' }}>%</th>
+              <th rowSpan="2" style={{ textAlign: 'center' }}>Status</th>
+            </tr>
+            <tr style={{ background: '#f8fafc' }}>
+              <th style={{ textAlign: 'center', fontSize: '0.65rem' }}>STR</th>
+              <th style={{ textAlign: 'center', fontSize: '0.65rem' }}>PRE</th>
+              <th style={{ textAlign: 'center', fontSize: '0.65rem' }}>STR</th>
+              <th style={{ textAlign: 'center', fontSize: '0.65rem' }}>PRE</th>
             </tr>
           </thead>
           <tbody>
             {Object.keys(STREAMS).map(stream => (
               <React.Fragment key={stream}>
                 <tr>
-                  <td colSpan="4" style={{ background: '#f8fafc', fontWeight: 800, color: '#6366f1', fontSize: '0.75rem' }}>{stream}</td>
+                  <td colSpan="8" style={{ background: '#f8fafc', fontWeight: 800, color: '#6366f1', fontSize: '0.75rem' }}>{stream}</td>
                 </tr>
                 {STREAMS[stream].map(section => {
                   const id = `${stream}|${section}`;
@@ -314,9 +370,9 @@ export default function PrincipalDashboard() {
                       <td style={{ paddingLeft: '3rem', fontWeight: 700 }}>{section}</td>
                       <td style={{ textAlign: 'center' }}>
                         <input 
-                          type="number" className="btn btn-ghost" style={{ width: '90px', padding: '0.4rem', textAlign: 'center', fontWeight: 900, fontSize: '1rem', color: '#0f172a' }} 
-                          value={data[id]?.strength || ''} 
-                          onChange={(e) => handleInputChange(id, 'strength', e.target.value)}
+                          type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#6366f1' }} 
+                          value={data[id]?.cbse_strength || ''} 
+                          onChange={(e) => handleInputChange(id, 'cbse_strength', e.target.value)}
                           disabled={data[id]?.finalized}
                           placeholder="STR"
                           min="0"
@@ -324,13 +380,36 @@ export default function PrincipalDashboard() {
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <input 
-                          type="number" className="btn btn-ghost" style={{ width: '90px', padding: '0.4rem', textAlign: 'center', fontWeight: 900, fontSize: '1rem', color: '#0f172a' }} 
-                          value={data[id]?.present || ''} 
-                          onChange={(e) => handleInputChange(id, 'present', e.target.value)}
+                          type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#6366f1' }} 
+                          value={data[id]?.cbse_present || ''} 
+                          onChange={(e) => handleInputChange(id, 'cbse_present', e.target.value)}
                           disabled={data[id]?.finalized}
                           placeholder="PRE"
                           min="0"
                         />
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <input 
+                          type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#ec4899' }} 
+                          value={data[id]?.pu_strength || ''} 
+                          onChange={(e) => handleInputChange(id, 'pu_strength', e.target.value)}
+                          disabled={data[id]?.finalized}
+                          placeholder="STR"
+                          min="0"
+                        />
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <input 
+                          type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#ec4899' }} 
+                          value={data[id]?.pu_present || ''} 
+                          onChange={(e) => handleInputChange(id, 'pu_present', e.target.value)}
+                          disabled={data[id]?.finalized}
+                          placeholder="PRE"
+                          min="0"
+                        />
+                      </td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#0f172a', background: '#f8fafc', borderLeft: '1px solid #e2e8f0' }}>
+                        {data[id]?.present || 0} / {data[id]?.strength || 0}
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ 
@@ -400,10 +479,17 @@ export default function PrincipalDashboard() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'left', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
-                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STR</th>
-                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>PRE</th>
-                      <th style={{ textAlign: 'center', padding: '8px', fontSize: '0.85rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
+                      <th rowSpan="2" style={{ textAlign: 'left', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>STREAM / GROUP</th>
+                      <th colSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '1px solid #e2e8f0', color: '#6366f1' }}>CBSE</th>
+                      <th colSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '1px solid #e2e8f0', color: '#ec4899' }}>PU</th>
+                      <th rowSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>TOT</th>
+                      <th rowSpan="2" style={{ textAlign: 'center', padding: '5px', fontSize: '0.7rem', borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>%</th>
+                    </tr>
+                    <tr style={{ background: '#f8fafc' }}>
+                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#6366f1' }}>S</th>
+                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#6366f1' }}>P</th>
+                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#ec4899' }}>S</th>
+                      <th style={{ textAlign: 'center', padding: '3px', fontSize: '0.6rem', color: '#ec4899' }}>P</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -416,7 +502,7 @@ export default function PrincipalDashboard() {
                       return (
                         <React.Fragment key={streamGroup}>
                           <tr>
-                            <td colSpan="4" style={{ background: '#f1f5f9', fontWeight: 900, color: '#4f46e5', fontSize: '1rem', padding: '10px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1px solid #e2e8f0' }}>
+                            <td colSpan="7" style={{ background: '#f1f5f9', fontWeight: 900, color: '#4f46e5', fontSize: '0.8rem', padding: '6px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #e2e8f0' }}>
                               {streamGroup}
                             </td>
                           </tr>
@@ -424,10 +510,13 @@ export default function PrincipalDashboard() {
                             const id = `${streamGroup}|${sect}`;
                             return (
                               <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                <td style={{ paddingLeft: '15px', fontWeight: 700, fontSize: '0.95rem', padding: '6px', color: '#0f172a' }}>{sect}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{data[id].strength || 0}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{data[id].present || 0}</td>
-                                <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.95rem', color: getStatusColor(getPercentage(data[id].present, data[id].strength)) }}>
+                                <td style={{ paddingLeft: '10px', fontWeight: 700, fontSize: '0.75rem', padding: '4px', color: '#0f172a' }}>{sect}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{data[id].cbse_strength || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{data[id].cbse_present || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{data[id].pu_strength || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{data[id].pu_present || 0}</td>
+                                <td style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 800, color: '#0f172a' }}>{data[id].present || 0}</td>
+                                <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.75rem', color: getStatusColor(getPercentage(data[id].present, data[id].strength)) }}>
                                   {getPercentage(data[id].present, data[id].strength)}%
                                 </td>
                               </tr>
@@ -439,10 +528,10 @@ export default function PrincipalDashboard() {
                   </tbody>
                   <tfoot>
                     <tr style={{ background: '#0f172a', color: '#ffffff' }}>
-                      <td style={{ padding: '12px 15px', fontWeight: 900, fontSize: '1.1rem' }}>GRAND TOTAL</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem' }}>{calculateTotal('strength')}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem' }}>{calculateTotal('present')}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
+                      <td style={{ padding: '8px 10px', fontWeight: 900, fontSize: '0.85rem' }}>GRAND TOTAL</td>
+                      <td colSpan="4" style={{ textAlign: 'right', paddingRight: '15px', fontSize: '0.7rem', color: '#cbd5e1' }}>Overall Summary:</td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.85rem' }}>{calculateTotal('present')} / {calculateTotal('strength')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.85rem', color: getStatusColor(getPercentage(calculateTotal('present'), calculateTotal('strength'))) }}>
                         {getPercentage(calculateTotal('present'), calculateTotal('strength'))}%
                       </td>
                     </tr>
