@@ -44,7 +44,10 @@ export default function PrincipalDashboard() {
       Object.keys(STREAMS).forEach(stream => {
         STREAMS[stream].forEach(sect => {
           const key = `${stream}|${sect}`;
-          const existing = res.data.find(r => r.stream === sect && r.branch === stream);
+          const existing = res.data.find(r => 
+            r.stream?.trim().toLowerCase() === sect.trim().toLowerCase() && 
+            r.branch?.trim().toLowerCase() === stream.trim().toLowerCase()
+          );
           
           // Treat 1, "1", or true as finalized
           const isLocked = existing && (
@@ -55,12 +58,13 @@ export default function PrincipalDashboard() {
           );
 
           initialData[key] = { 
-            cbse_strength: existing ? existing.cbse_strength : '',
-            cbse_present: existing ? existing.cbse_present : '',
-            pu_strength: existing ? existing.pu_strength : '',
-            pu_present: existing ? existing.pu_present : '',
-            strength: existing ? existing.strength : '', 
-            present: existing ? existing.present : '',
+            cbse_strength: existing ? (existing.cbse_strength ?? '') : '',
+            cbse_present: existing ? (existing.cbse_present ?? '') : '',
+            pu_strength: existing ? (existing.pu_strength ?? '') : '',
+            pu_present: existing ? (existing.pu_present ?? '') : '',
+            // Ensure juniors use their direct columns if CBSE/PU are missing
+            strength: existing ? (existing.strength ?? '') : '', 
+            present: existing ? (existing.present ?? '') : '',
             finalized: !!isLocked
           };
         });
@@ -397,7 +401,7 @@ export default function PrincipalDashboard() {
                           <td style={{ textAlign: 'center', background: '#f5f3ff' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#6366f1' }} 
-                              value={data[id]?.cbse_strength || ''} 
+                              value={data[id]?.cbse_strength ?? ''} 
                               onChange={(e) => handleInputChange(id, 'cbse_strength', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="STR"
@@ -407,7 +411,7 @@ export default function PrincipalDashboard() {
                           <td style={{ textAlign: 'center', background: '#f5f3ff' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#6366f1' }} 
-                              value={data[id]?.cbse_present || ''} 
+                              value={data[id]?.cbse_present ?? ''} 
                               onChange={(e) => handleInputChange(id, 'cbse_present', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="PRE"
@@ -417,7 +421,7 @@ export default function PrincipalDashboard() {
                           <td style={{ textAlign: 'center', background: '#fdf2f8' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#ec4899' }} 
-                              value={data[id]?.pu_strength || ''} 
+                              value={data[id]?.pu_strength ?? ''} 
                               onChange={(e) => handleInputChange(id, 'pu_strength', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="STR"
@@ -427,7 +431,7 @@ export default function PrincipalDashboard() {
                           <td style={{ textAlign: 'center', background: '#fdf2f8' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#ec4899' }} 
-                              value={data[id]?.pu_present || ''} 
+                              value={data[id]?.pu_present ?? ''} 
                               onChange={(e) => handleInputChange(id, 'pu_present', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="PRE"
@@ -440,7 +444,7 @@ export default function PrincipalDashboard() {
                           <td colSpan="2" style={{ textAlign: 'center' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '130px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#64748b' }} 
-                              value={data[id]?.strength || ''} 
+                              value={data[id]?.strength ?? ''} 
                               onChange={(e) => handleInputChange(id, 'strength', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="TOTAL STR"
@@ -450,7 +454,7 @@ export default function PrincipalDashboard() {
                           <td colSpan="2" style={{ textAlign: 'center' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '130px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#64748b' }} 
-                              value={data[id]?.present || ''} 
+                              value={data[id]?.present ?? ''} 
                               onChange={(e) => handleInputChange(id, 'present', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="TOTAL PRE"
