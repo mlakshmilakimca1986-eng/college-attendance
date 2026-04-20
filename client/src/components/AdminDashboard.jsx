@@ -91,7 +91,7 @@ export default function AdminDashboard() {
       });
       
       // Construct WhatsApp Message
-      const message = `Hello ${user.principal_name},\n\nYour account for the *College Attendance Portal* has been *APPROVED* by the Administrator.\n\nYou can now log in using your credentials.\n\nThank you!`;
+      const message = `Dear Principal,\n\nI hope this message finds you well.\n\nThis is to inform you that the account for the College Attendance Portal has been successfully approved by the Administrator. The user may now log in using their credentials and access the portal.\n\nThank you.`;
       const whatsappUrl = `https://wa.me/${user.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
       
       showModal('Success', `${user.principal_name} approved! Opening WhatsApp notification...`, 'success');

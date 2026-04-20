@@ -67,6 +67,11 @@ app.post('/api/auth/login', async (req, res) => {
         const user = rows[0];
         const validPass = await bcrypt.compare(password, user.password);
         if (!validPass) return res.status(400).send('Invalid password');
+        
+        if (user.role === 'principal' && !user.is_approved) {
+            return res.status(403).send('Approval pending! Please wait for Admin to approve your account.');
+        }
+
         const token = jwt.sign({ id: user.id, role: user.role, name: user.principal_name }, process.env.JWT_SECRET || 'secret');
         res.send({ token, role: user.role, name: user.principal_name });
     } catch (err) { res.status(500).send(err.message); }
@@ -123,6 +128,7 @@ app.post('/api/auth/register', async (req, res) => {
 
 // --- ADMIN CONTROL ---
 app.get('/api/admin/pending', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Admin only');
     try {
         const [rows] = await pool.query('SELECT id, principal_name, campus_email, whatsapp_number FROM users WHERE role = "principal" AND is_approved = FALSE');
         res.send(rows);
@@ -130,17 +136,19 @@ app.get('/api/admin/pending', auth, async (req, res) => {
 });
 
 app.post('/api/admin/approve/:id', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Admin only');
     try {
         await pool.query('UPDATE users SET is_approved = TRUE WHERE id = ?', [req.params.id]);
         res.send('Approved');
     } catch (err) { res.status(500).send(err.message); }
 });
 
-app.post('/api/admin/reset-password/:id', auth, async (req, res) => {
-    const { newPassword } = req.body;
+app.post('/api/admin/reset-password', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Admin only');
+    const { userId, newPassword } = req.body;
     try {
         const hashedPass = await bcrypt.hash(newPassword, 10);
-        await pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedPass, req.params.id]);
+        await pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedPass, userId]);
         res.send('Password updated');
     } catch (err) { res.status(500).send(err.message); }
 });
@@ -155,6 +163,7 @@ app.get('/api/admin/attendance/:principal_id', auth, async (req, res) => {
 });
 
 app.delete('/api/admin/user/:id', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Admin only');
     try {
         await pool.query('DELETE FROM attendance_data WHERE principal_id = ?', [req.params.id]);
         await pool.query('DELETE FROM users WHERE id = ?', [req.params.id]);
@@ -163,6 +172,7 @@ app.delete('/api/admin/user/:id', auth, async (req, res) => {
 });
 
 app.get('/api/admin/stats', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Admin only');
     const { date } = req.query;
     const targetDate = date || new Date().toISOString().split('T')[0];
     try {
@@ -221,6 +231,7 @@ const colMapping = {
 };
 
 app.get('/api/admin/export-excel', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Admin only');
     const { date } = req.query;
     const targetDate = date || new Date().toISOString().split('T')[0];
     try {
