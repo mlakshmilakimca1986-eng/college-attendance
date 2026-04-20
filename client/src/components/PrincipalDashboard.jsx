@@ -401,7 +401,7 @@ export default function PrincipalDashboard() {
                           <td style={{ textAlign: 'center', background: '#f5f3ff' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#6366f1' }} 
-                              value={data[id]?.cbse_strength ?? ''} 
+                              value={data[id]?.cbse_strength || ''} 
                               onChange={(e) => handleInputChange(id, 'cbse_strength', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="STR"
@@ -411,7 +411,7 @@ export default function PrincipalDashboard() {
                           <td style={{ textAlign: 'center', background: '#f5f3ff' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#6366f1' }} 
-                              value={data[id]?.cbse_present ?? ''} 
+                              value={data[id]?.cbse_present || ''} 
                               onChange={(e) => handleInputChange(id, 'cbse_present', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="PRE"
@@ -421,7 +421,7 @@ export default function PrincipalDashboard() {
                           <td style={{ textAlign: 'center', background: '#fdf2f8' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#ec4899' }} 
-                              value={data[id]?.pu_strength ?? ''} 
+                              value={data[id]?.pu_strength || ''} 
                               onChange={(e) => handleInputChange(id, 'pu_strength', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="STR"
@@ -431,7 +431,7 @@ export default function PrincipalDashboard() {
                           <td style={{ textAlign: 'center', background: '#fdf2f8' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '75px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#ec4899' }} 
-                              value={data[id]?.pu_present ?? ''} 
+                              value={data[id]?.pu_present || ''} 
                               onChange={(e) => handleInputChange(id, 'pu_present', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="PRE"
@@ -444,7 +444,7 @@ export default function PrincipalDashboard() {
                           <td colSpan="2" style={{ textAlign: 'center' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '130px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#64748b' }} 
-                              value={data[id]?.strength ?? ''} 
+                              value={data[id]?.strength || ''} 
                               onChange={(e) => handleInputChange(id, 'strength', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="TOTAL STR"
@@ -454,7 +454,7 @@ export default function PrincipalDashboard() {
                           <td colSpan="2" style={{ textAlign: 'center' }}>
                             <input 
                               type="number" className="btn btn-ghost" style={{ width: '130px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#64748b' }} 
-                              value={data[id]?.present ?? ''} 
+                              value={data[id]?.present || ''} 
                               onChange={(e) => handleInputChange(id, 'present', e.target.value)}
                               disabled={data[id]?.finalized}
                               placeholder="TOTAL PRE"
