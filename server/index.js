@@ -522,18 +522,20 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             return letter;
         };
 
-        // Initialize all relevant rows to 0 (Value cells only)
+        // Targeted Initialization: ONLY clear input columns to avoid breaking formulas and keep file clean
         const initRange = (start, count) => {
             for (let r = start; r < start + count; r++) {
                 const row = formatSheet.getRow(r);
                 if (row.getCell(2).text) {
-                    for (let c = 5; c <= 110; c++) {
-                        const cell = row.getCell(c);
-                        // ONLY clear values for non-formula cells to preserve shared formulas
-                        if (cell.type !== 6) { // 6 is ExcelJS.ValueType.Formula
-                            cell.value = 0;
-                        }
-                    }
+                    // Specific Input Column IDs
+                    const inputCols = [
+                        5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 
+                        40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62,63,64, 68,69,70,71,
+                        84,85, 87,88, 90,91, 93,94, 104,105
+                    ];
+                    inputCols.forEach(c => {
+                        row.getCell(c).value = 0;
+                    });
                 }
             }
         };
