@@ -344,42 +344,42 @@ export default function PrincipalDashboard() {
           <tbody>
             {Object.keys(STREAMS).map(stream => (
               <React.Fragment key={stream}>
-                  <tr key={stream}>
-                    <td colSpan="8" style={{ background: '#fff', padding: '2rem 1.5rem 0.5rem 1.5rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#1e293b', borderLeft: '4px solid #4f46e5', paddingLeft: '1rem', textTransform: 'uppercase' }}>
-                          {stream}
-                        </div>
-                        
-                        {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') && (
-                          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 25%) 160px 160px 80px 80px 80px', gap: '0', alignItems: 'center' }}>
-                            <div style={{ visibility: 'hidden' }}>Spacer</div>
-                            <div style={{ textAlign: 'center' }}>
-                              <div style={{ fontSize: '0.8rem', fontWeight: 900, color: '#6366f1', marginBottom: '5px' }}>CBSE</div>
-                              <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}><span>STR</span><span>PRE</span></div>
-                            </div>
-                            <div style={{ textAlign: 'center' }}>
-                              <div style={{ fontSize: '0.8rem', fontWeight: 900, color: '#ec4899', marginBottom: '5px' }}>PU</div>
-                              <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}><span>STR</span><span>PRE</span></div>
-                            </div>
-                            <div style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}>TOTAL</div>
-                            <div style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}>%</div>
-                            <div style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}>ST</div>
-                          </div>
-                        )}
-                        {/* Headers for Junior sections */}
-                        {(stream !== 'INCOMING SENIORS' && stream !== 'OUTGOING SENIORS') && (
-                           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 25%) 320px 80px 80px 80px', gap: '0', alignItems: 'center' }}>
-                             <div style={{ visibility: 'hidden' }}>Spacer</div>
-                             <div style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}>TOTAL (STR | PRE)</div>
-                             <div style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}>TOTAL</div>
-                             <div style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}>%</div>
-                             <div style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 800 }}>ST</div>
-                           </div>
-                        )}
+                  <tr key={stream + '_title'}>
+                    <td colSpan="8" style={{ background: '#fff', padding: '1.5rem 1.5rem 0.5rem 1.5rem', border: 'none' }}>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1e293b', borderLeft: '4px solid #4f46e5', paddingLeft: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {stream}
                       </div>
                     </td>
                   </tr>
+                  {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') ? (
+                    <tr key={stream + '_heading'} style={{ background: '#f8fafc' }}>
+                      <th style={{ width: '25%', padding: '0.5rem 1.5rem' }}></th>
+                      <th colSpan="2" style={{ textAlign: 'center', color: '#6366f1', fontSize: '0.75rem', fontWeight: 900, background: '#f5f3ff', borderBottom: '2px solid #e0e7ff' }}>CBSE</th>
+                      <th colSpan="2" style={{ textAlign: 'center', color: '#ec4899', fontSize: '0.75rem', fontWeight: 900, background: '#fdf2f8', borderBottom: '2px solid #fce7f3' }}>PU</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>TOTAL</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>%</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>ST</th>
+                    </tr>
+                  ) : null}
+                  {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') ? (
+                    <tr key={stream + '_subheading'} style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ padding: '0.2rem' }}></th>
+                      <th style={{ textAlign: 'center', fontSize: '0.6rem', color: '#6366f1', padding: '0.3rem', background: '#f5f3ff' }}>STR</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.6rem', color: '#6366f1', padding: '0.3rem', background: '#f5f3ff' }}>PRE</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.6rem', color: '#ec4899', padding: '0.3rem', background: '#fdf2f8' }}>STR</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.6rem', color: '#ec4899', padding: '0.3rem', background: '#fdf2f8' }}>PRE</th>
+                      <th colSpan="3"></th>
+                    </tr>
+                  ) : null}
+                  {(stream !== 'INCOMING SENIORS' && stream !== 'OUTGOING SENIORS') ? (
+                    <tr key={stream + '_junior_heading'} style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ width: '25%' }}></th>
+                      <th colSpan="2" style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>STR | PRE</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>TOTAL</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>%</th>
+                      <th style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', fontWeight: 900 }}>ST</th>
+                    </tr>
+                  ) : null}
                 {STREAMS[stream].map(section => {
                   const id = `${stream}|${section}`;
                   return (
@@ -393,7 +393,7 @@ export default function PrincipalDashboard() {
                               value={data[id]?.cbse_strength || ''} 
                               onChange={(e) => handleInputChange(id, 'cbse_strength', e.target.value)}
                               disabled={data[id]?.finalized}
-                              placeholder="CBSE STR"
+                              placeholder="STR"
                               min="0"
                             />
                           </td>
@@ -403,7 +403,7 @@ export default function PrincipalDashboard() {
                               value={data[id]?.cbse_present || ''} 
                               onChange={(e) => handleInputChange(id, 'cbse_present', e.target.value)}
                               disabled={data[id]?.finalized}
-                              placeholder="CBSE PRE"
+                              placeholder="PRE"
                               min="0"
                             />
                           </td>
@@ -413,7 +413,7 @@ export default function PrincipalDashboard() {
                               value={data[id]?.pu_strength || ''} 
                               onChange={(e) => handleInputChange(id, 'pu_strength', e.target.value)}
                               disabled={data[id]?.finalized}
-                              placeholder="PU STR"
+                              placeholder="STR"
                               min="0"
                             />
                           </td>
@@ -423,7 +423,7 @@ export default function PrincipalDashboard() {
                               value={data[id]?.pu_present || ''} 
                               onChange={(e) => handleInputChange(id, 'pu_present', e.target.value)}
                               disabled={data[id]?.finalized}
-                              placeholder="PU PRE"
+                              placeholder="PRE"
                               min="0"
                             />
                           </td>
