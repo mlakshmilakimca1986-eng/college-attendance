@@ -522,14 +522,17 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             return letter;
         };
 
-        // Initialize all relevant rows to 0
+        // Initialize all relevant rows to 0 (Value cells only)
         const initRange = (start, count) => {
             for (let r = start; r < start + count; r++) {
                 const row = formatSheet.getRow(r);
                 if (row.getCell(2).text) {
-                    // Fill columns Col 5 to 110 with 0
                     for (let c = 5; c <= 110; c++) {
-                        row.getCell(c).value = 0;
+                        const cell = row.getCell(c);
+                        // ONLY clear values for non-formula cells to preserve shared formulas
+                        if (cell.type !== 6) { // 6 is ExcelJS.ValueType.Formula
+                            cell.value = 0;
+                        }
                     }
                 }
             }
@@ -562,21 +565,10 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                         row.getCell(baseCol + 1).value = item.cbse_present || 0;
                         row.getCell(baseCol + 2).value = item.pu_strength || 0;
                         row.getCell(baseCol + 3).value = item.pu_present || 0;
-                        
-                        const c1 = getCol(baseCol) + incRowIdx;
-                        const c2 = getCol(baseCol + 2) + incRowIdx;
-                        const p1 = getCol(baseCol + 1) + incRowIdx;
-                        const p2 = getCol(baseCol + 3) + incRowIdx;
-                        
-                        row.getCell(baseCol + 4).value = { formula: `${c1}+${c2}` };
-                        row.getCell(baseCol + 5).value = { formula: `${p1}+${p2}` };
-                        const totCell = getCol(baseCol + 4) + incRowIdx;
-                        const preCell = getCol(baseCol + 5) + incRowIdx;
-                        row.getCell(baseCol + 6).value = { formula: `IF(${totCell}>0, ${preCell}/${totCell}, 0)` };
-                        row.getCell(baseCol + 6).numFmt = '0%';
+                        // Formulas (TOT, PRE, %) are already in template, we don't touch them
                     }
                 });
-                // Junior classes (CO-IPL) - Using incRow row
+                
                 userAttendance.filter(a => a.branch === 'CO-IPL').forEach(item => {
                     let col = null;
                     const sName = item.stream?.toUpperCase() || "";
@@ -588,24 +580,14 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     if (col) {
                         row.getCell(col).value = item.strength || 0;
                         row.getCell(col + 1).value = item.present || 0;
-                        const sC = getCol(col) + incRowIdx;
-                        const pC = getCol(col + 1) + incRowIdx;
-                        row.getCell(col + 2).value = { formula: `IF(${sC}>0, ${pC}/${sC}, 0)` };
-                        row.getCell(col + 2).numFmt = '0%';
                     }
                 });
                 
-                // LTC-VAIDYAH - Using incRow row
                 userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
-                    const col = 104; // CZ
-                    row.getCell(col).value = item.strength || 0;
-                    row.getCell(col + 1).value = item.present || 0;
-                    const sC = getCol(col) + incRowIdx;
-                    const pC = getCol(col + 1) + incRowIdx;
-                    row.getCell(col + 2).value = { formula: `IF(${sC}>0, ${pC}/${sC}, 0)` };
-                    row.getCell(col + 2).numFmt = '0%';
+                    row.getCell(104).value = item.strength || 0;
+                    row.getCell(105).value = item.present || 0;
                 });
-                row.commit();
+                // No row.commit() needed for worksheet rows
             }
 
             if (outRowIdx) {
@@ -617,28 +599,8 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                         row.getCell(baseCol + 1).value = item.cbse_present || 0;
                         row.getCell(baseCol + 2).value = item.pu_strength || 0;
                         row.getCell(baseCol + 3).value = item.pu_present || 0;
-                        
-                        const c1 = getCol(baseCol) + outRowIdx;
-                        const c2 = getCol(baseCol + 2) + outRowIdx;
-                        const p1 = getCol(baseCol + 1) + outRowIdx;
-                        const p2 = getCol(baseCol + 3) + outRowIdx;
-                        
-                        row.getCell(baseCol + 4).value = { formula: `${c1}+${c2}` };
-                        row.getCell(baseCol + 5).value = { formula: `${p1}+${p2}` };
-                        const totCell = getCol(baseCol + 4) + outRowIdx;
-                        const preCell = getCol(baseCol + 5) + outRowIdx;
-                        row.getCell(baseCol + 6).value = { formula: `IF(${totCell}>0, ${preCell}/${totCell}, 0)` };
-                        row.getCell(baseCol + 6).numFmt = '0%';
                     }
                 });
-                // LTC-VAIDYAH
-                userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
-                    row.getCell(104).value = item.strength || 0;
-                    row.getCell(105).value = item.present || 0;
-                    row.getCell(106).value = { formula: `IF(${getCol(104)}${outRowIdx}>0, ${getCol(105)}${outRowIdx}/${getCol(104)}${outRowIdx}, 0)` };
-                    row.getCell(106).numFmt = '0%';
-                });
-                row.commit();
             }
         }
 
