@@ -189,24 +189,25 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-      <header className="glass-card header-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '1.5rem 2rem', gap: '1.5rem' }}>
-        <div className="brand-section" style={{ width: '100%', borderBottom: '1px solid rgba(226, 232, 240, 0.4)', paddingBottom: '1rem', marginBottom: '-0.5rem' }}>
-          <div className="logo-container">
-            <img src="/logo.png" alt="Logo" />
+      <header className="glass-card header-card" style={{ display: 'flex', flexDirection: 'column', padding: '1.2rem 2rem', gap: '1rem', alignItems: 'flex-start' }}>
+        <div className="brand-section" style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', borderBottom: '1px solid rgba(226, 232, 240, 0.4)', paddingBottom: '0.8rem' }}>
+          <div className="logo-container" style={{ width: '50px', height: '50px', background: '#fff', borderRadius: '12px', padding: '5px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
-            <h1 style={{ whiteSpace: 'nowrap' }}>Admin Control Center</h1>
-            <p className="subtitle" style={{ whiteSpace: 'nowrap' }}>Real-time Campus Monitoring</p>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1e293b', margin: 0 }}>Admin Control Center: <span style={{ color: '#4f46e5' }}>College Records</span></h1>
+            <p className="subtitle" style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>Real-time Campus Monitoring</p>
           </div>
         </div>
+
         <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
-          <div className="input-wrapper" style={{ marginRight: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', width: '180px' }}>
+          <div className="input-wrapper" style={{ marginRight: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
             <Clock className="icon" size={16} />
             <input 
               type="date" 
               value={selectedDate} 
               onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ padding: '0.4rem', paddingLeft: '2.5rem', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 900, width: '100%', position: 'relative' }}
+              style={{ padding: '0.5rem 0', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}
             />
           </div>
           <button onClick={() => setView('analytics')} className={`btn ${view === 'analytics' ? 'btn-primary' : 'btn-ghost'}`} style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem' }}>
@@ -519,13 +520,23 @@ export default function AdminDashboard() {
                           </tr>
                           {groupSects.map((sect, idx) => {
                             const found = reportModal.data.find(d => d.stream === sect && d.branch === streamGroup);
+                            const isSenior = streamGroup === 'INCOMING SENIORS' || streamGroup === 'OUTGOING SENIORS';
                             return (
                               <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                 <td style={{ paddingLeft: '10px', fontWeight: 700, fontSize: '0.75rem', padding: '4px', color: '#0f172a' }}>{sect}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{found.cbse_strength || 0}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{found.cbse_present || 0}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{found.pu_strength || 0}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{found.pu_present || 0}</td>
+                                {isSenior ? (
+                                  <>
+                                    <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{found.cbse_strength || 0}</td>
+                                    <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{found.cbse_present || 0}</td>
+                                    <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{found.pu_strength || 0}</td>
+                                    <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{found.pu_present || 0}</td>
+                                  </>
+                                ) : (
+                                  <>
+                                    <td colSpan="2" style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b' }}>{found.strength || 0} (TOT)</td>
+                                    <td colSpan="2" style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b' }}>{found.present || 0} (PRE)</td>
+                                  </>
+                                )}
                                 <td style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 800, color: '#0f172a' }}>{found.present || 0}</td>
                                 <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.75rem', color: getStatusColor(getPercentage(found.present, found.strength)) }}>
                                   {getPercentage(found.present, found.strength)}%

@@ -221,29 +221,28 @@ export default function PrincipalDashboard() {
           </div>
         </div>
       )}
-      <header className="glass-card header-card">
-        <div className="brand-section">
-          <div className="logo-container">
-            <img src="/logo.png" alt="Logo" />
+      <header className="glass-card header-card" style={{ display: 'flex', flexDirection: 'column', padding: '1.2rem 2rem', gap: '1rem', alignItems: 'flex-start' }}>
+        <div className="brand-section" style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', borderBottom: '1px solid rgba(226, 232, 240, 0.4)', paddingBottom: '0.8rem' }}>
+          <div className="logo-container" style={{ width: '50px', height: '50px', background: '#fff', borderRadius: '12px', padding: '5px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
-            <h1>Daily Attendance</h1>
-            <p className="subtitle">School: <strong>{localStorage.getItem('name')}</strong></p>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1e293b', margin: 0 }}>Daily Attendance College: <span style={{ color: '#4f46e5' }}>{localStorage.getItem('name')}</span></h1>
+            <p className="subtitle" style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>Official Attendance Reporting Portal</p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-          {isSaving && <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#6366f1', fontSize: '0.75rem', fontWeight: 800 }}><CloudUpload size={16} className="animate-bounce" /> Savings...</div>}
-          <div className="input-wrapper" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', width: '200px' }}>
+
+        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
+          <div className="input-wrapper" style={{ marginRight: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
             <Calendar className="icon" size={16} />
             <input 
               type="date" 
               value={date} 
-              onChange={(e) => setDate(e.target.value)} 
-              disabled={isFinalized}
-              style={{ padding: '0.4rem', paddingLeft: '2.5rem', fontSize: '0.85rem', fontWeight: 900, border: 'none', background: 'transparent', width: '100%', position: 'relative' }}
+              onChange={(e) => setDate(e.target.value)}
+              style={{ padding: '0.5rem 0', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}
             />
           </div>
-          <button onClick={() => setReportModal({ isOpen: true })} className="btn btn-ghost" style={{ gap: '0.4rem', background: '#f5f3ff', color: '#6d28d9', fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}>
+          <button onClick={() => setReportModal({ isOpen: true })} className="btn btn-ghost" style={{ gap: '0.4rem', background: '#f5f3ff', color: '#6d28d9', fontSize: '0.75rem', padding: '0.5rem 1rem' }}>
             <Eye size={16} /> Preview
           </button>
           <button 
@@ -268,7 +267,7 @@ export default function PrincipalDashboard() {
               }
             }} 
             className="btn btn-primary" 
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', gap: '0.4rem', background: '#3b82f6', borderColor: '#3b82f6' }}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#3b82f6', borderColor: '#3b82f6' }}
           >
             <Download size={16} /> COLLEGE ATTENDANCE
           </button>
@@ -294,20 +293,20 @@ export default function PrincipalDashboard() {
               }
             }} 
             className="btn btn-primary" 
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981' }}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981' }}
           >
             <Download size={16} /> STREAM-WISE DAILY ATTENDANCE
           </button>
           <button 
             onClick={finalizeReport} 
             className="btn btn-primary" 
-            style={{ gap: '0.4rem', fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+            style={{ gap: '0.4rem', fontSize: '0.75rem', padding: '0.5rem 1rem' }}
             disabled={isFinalizing}
           >
             {isFinalizing ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             {isFinalizing ? 'Finalizing...' : 'Finalize'}
           </button>
-          <button onClick={Logout} className="btn btn-ghost" style={{ gap: '0.4rem', border: 'none', color: '#be123c', background: '#fff1f2', fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}>
+          <button onClick={Logout} className="btn btn-ghost" style={{ gap: '0.4rem', border: 'none', color: '#be123c', background: '#fff1f2', fontSize: '0.75rem', padding: '0.5rem 1rem' }}>
             <LogOut size={16} /> Logout
           </button>
         </div>
@@ -368,46 +367,73 @@ export default function PrincipalDashboard() {
                   return (
                     <tr key={id} style={{ opacity: data[id]?.finalized ? 0.7 : 1 }}>
                       <td style={{ paddingLeft: '3rem', fontWeight: 700 }}>{section}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input 
-                          type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#6366f1' }} 
-                          value={data[id]?.cbse_strength || ''} 
-                          onChange={(e) => handleInputChange(id, 'cbse_strength', e.target.value)}
-                          disabled={data[id]?.finalized}
-                          placeholder="STR"
-                          min="0"
-                        />
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input 
-                          type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#6366f1' }} 
-                          value={data[id]?.cbse_present || ''} 
-                          onChange={(e) => handleInputChange(id, 'cbse_present', e.target.value)}
-                          disabled={data[id]?.finalized}
-                          placeholder="PRE"
-                          min="0"
-                        />
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input 
-                          type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#ec4899' }} 
-                          value={data[id]?.pu_strength || ''} 
-                          onChange={(e) => handleInputChange(id, 'pu_strength', e.target.value)}
-                          disabled={data[id]?.finalized}
-                          placeholder="STR"
-                          min="0"
-                        />
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input 
-                          type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#ec4899' }} 
-                          value={data[id]?.pu_present || ''} 
-                          onChange={(e) => handleInputChange(id, 'pu_present', e.target.value)}
-                          disabled={data[id]?.finalized}
-                          placeholder="PRE"
-                          min="0"
-                        />
-                      </td>
+                      {(stream === 'INCOMING SENIORS' || stream === 'OUTGOING SENIORS') ? (
+                        <>
+                          <td style={{ textAlign: 'center' }}>
+                            <input 
+                              type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#6366f1' }} 
+                              value={data[id]?.cbse_strength || ''} 
+                              onChange={(e) => handleInputChange(id, 'cbse_strength', e.target.value)}
+                              disabled={data[id]?.finalized}
+                              placeholder="STR"
+                              min="0"
+                            />
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <input 
+                              type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#6366f1' }} 
+                              value={data[id]?.cbse_present || ''} 
+                              onChange={(e) => handleInputChange(id, 'cbse_present', e.target.value)}
+                              disabled={data[id]?.finalized}
+                              placeholder="PRE"
+                              min="0"
+                            />
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <input 
+                              type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#ec4899' }} 
+                              value={data[id]?.pu_strength || ''} 
+                              onChange={(e) => handleInputChange(id, 'pu_strength', e.target.value)}
+                              disabled={data[id]?.finalized}
+                              placeholder="STR"
+                              min="0"
+                            />
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <input 
+                              type="number" className="btn btn-ghost" style={{ width: '65px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#ec4899' }} 
+                              value={data[id]?.pu_present || ''} 
+                              onChange={(e) => handleInputChange(id, 'pu_present', e.target.value)}
+                              disabled={data[id]?.finalized}
+                              placeholder="PRE"
+                              min="0"
+                            />
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td colSpan="2" style={{ textAlign: 'center' }}>
+                            <input 
+                              type="number" className="btn btn-ghost" style={{ width: '130px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#64748b' }} 
+                              value={data[id]?.strength || ''} 
+                              onChange={(e) => handleInputChange(id, 'strength', e.target.value)}
+                              disabled={data[id]?.finalized}
+                              placeholder="TOTAL STR"
+                              min="0"
+                            />
+                          </td>
+                          <td colSpan="2" style={{ textAlign: 'center' }}>
+                            <input 
+                              type="number" className="btn btn-ghost" style={{ width: '130px', padding: '0.3rem', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#64748b' }} 
+                              value={data[id]?.present || ''} 
+                              onChange={(e) => handleInputChange(id, 'present', e.target.value)}
+                              disabled={data[id]?.finalized}
+                              placeholder="TOTAL PRE"
+                              min="0"
+                            />
+                          </td>
+                        </>
+                      )}
                       <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#0f172a', background: '#f8fafc', borderLeft: '1px solid #e2e8f0' }}>
                         {data[id]?.present || 0} / {data[id]?.strength || 0}
                       </td>
@@ -508,13 +534,23 @@ export default function PrincipalDashboard() {
                           </tr>
                           {groupSects.map((sect, idx) => {
                             const id = `${streamGroup}|${sect}`;
+                            const isSenior = streamGroup === 'INCOMING SENIORS' || streamGroup === 'OUTGOING SENIORS';
                             return (
                               <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                 <td style={{ paddingLeft: '10px', fontWeight: 700, fontSize: '0.75rem', padding: '4px', color: '#0f172a' }}>{sect}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{data[id].cbse_strength || 0}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{data[id].cbse_present || 0}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{data[id].pu_strength || 0}</td>
-                                <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{data[id].pu_present || 0}</td>
+                                {isSenior ? (
+                                  <>
+                                    <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{data[id].cbse_strength || 0}</td>
+                                    <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6366f1' }}>{data[id].cbse_present || 0}</td>
+                                    <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{data[id].pu_strength || 0}</td>
+                                    <td style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ec4899' }}>{data[id].pu_present || 0}</td>
+                                  </>
+                                ) : (
+                                  <>
+                                    <td colSpan="2" style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b' }}>{data[id].strength || 0} (TOT)</td>
+                                    <td colSpan="2" style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b' }}>{data[id].present || 0} (PRE)</td>
+                                  </>
+                                )}
                                 <td style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 800, color: '#0f172a' }}>{data[id].present || 0}</td>
                                 <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.75rem', color: getStatusColor(getPercentage(data[id].present, data[id].strength)) }}>
                                   {getPercentage(data[id].present, data[id].strength)}%
