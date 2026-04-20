@@ -355,6 +355,95 @@ app.get('/api/admin/export-excel', auth, async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+app.get('/api/attendance/export-excel', auth, async (req, res) => {
+    const { date } = req.query;
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    try {
+        const [users] = await pool.query('SELECT id, principal_name FROM users WHERE id = ?', [req.user.id]);
+        if (users.length === 0) return res.status(404).send('User not found');
+        const currentUser = users[0];
+        const [attendance] = await pool.query('SELECT principal_id, branch, stream, strength, present FROM attendance_data WHERE principal_id = ? AND date = ?', [req.user.id, targetDate]);
+        const path = require('path');
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(path.join(__dirname, 'template.xlsx'));
+        const sheet = workbook.worksheets[0] || workbook.getWorksheet('STREAM WISE');
+        const parts = targetDate.split('-');
+        const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        sheet.getCell('U2').value = `Date:${formattedDate}`;
+        const incCols = Object.values(colMapping["INCOMING SENIORS"]);
+        const outCols = Object.values(colMapping["OUTGOING SENIORS"]);
+        const ltcCols = Object.values(colMapping["LTC-VAIDYAH"]);
+        const coCols = Object.values(colMapping["CO-IPL"]);
+        const colName = (n) => {
+            let s = "";
+            while (n > 0) {
+                let m = (n - 1) % 26;
+                s = String.fromCharCode(65 + m) + s;
+                n = Math.floor((n - 1) / 26);
+            }
+            return s;
+        };
+        let startRow = 6;
+        for (let i = 0; i < CAMPUSES.length; i++) {
+            const campusName = CAMPUSES[i].toUpperCase();
+            const rowIdx = startRow + i;
+            const row = sheet.getRow(rowIdx);
+            for (const b in colMapping) {
+                for (const s in colMapping[b]) {
+                    row.getCell(colMapping[b][s].str).value = 0;
+                    row.getCell(colMapping[b][s].pre).value = 0;
+                }
+            }
+            if (currentUser.principal_name.toUpperCase() === campusName) {
+                for (const item of attendance) {
+                    const map = colMapping[item.branch];
+                    if (map && map[item.stream]) {
+                        row.getCell(map[item.stream].str).value = parseInt(item.strength) || 0;
+                        row.getCell(map[item.stream].pre).value = parseInt(item.present) || 0;
+                    }
+                }
+            }
+            row.commit();
+        }
+        for (let r = 6; r <= 43; r++) {
+            const row = sheet.getRow(r);
+            const y = 25, z = 26, aa = 27, av = 48, aw = 49, ax = 50, ba = 53, bj = 62, bk = 63, bl = 64, bn = 66, bo = 67, bp = 68;
+            row.getCell(y).value = { formula: `SUM(${incCols.map(c => colName(c.str)+r).join(',')})` };
+            row.getCell(z).value = { formula: `SUM(${incCols.map(c => colName(c.pre)+r).join(',')})` };
+            row.getCell(aa).value = { formula: `IF(${colName(y)}${r}=0,0,ROUND((${colName(z)}${r}/${colName(y)}${r})*100,1))` };
+            row.getCell(av).value = { formula: `SUM(${outCols.map(c => colName(c.str)+r).join(',')})` };
+            row.getCell(aw).value = { formula: `SUM(${outCols.map(c => colName(c.pre)+r).join(',')})` };
+            row.getCell(ax).value = { formula: `IF(${colName(av)}${r}=0,0,ROUND((${colName(aw)}${r}/${colName(av)}${r})*100,1))` };
+            row.getCell(ba).value = { formula: `IF(${colName(ltcCols[0].str)}${r}=0,0,ROUND((${colName(ltcCols[0].pre)}${r}/${colName(ltcCols[0].str)}${r})*100,1))` };
+            row.getCell(bj).value = { formula: `SUM(${coCols.map(c => colName(c.str)+r).join(',')})` };
+            row.getCell(bk).value = { formula: `SUM(${coCols.map(c => colName(c.pre)+r).join(',')})` };
+            row.getCell(bl).value = { formula: `IF(${colName(bj)}${r}=0,0,ROUND((${colName(bk)}${r}/${colName(bj)}${r})*100,1))` };
+            row.getCell(bn).value = { formula: `${colName(y)}${r}+${colName(av)}${r}+${colName(ltcCols[0].str)}${r}+${colName(bj)}${r}` };
+            row.getCell(bo).value = { formula: `${colName(z)}${r}+${colName(aw)}${r}+${colName(ltcCols[0].pre)}${r}+${colName(bk)}${r}` };
+            row.getCell(bp).value = { formula: `IF(${colName(bn)}${r}=0,0,ROUND((${colName(bo)}${r}/${colName(bn)}${r})*100,1))` };
+            row.commit();
+        }
+        const bottomRow = sheet.getRow(44);
+        for (let c = 5; c <= 67; c++) {
+            if ([27, 50, 53, 64].includes(c)) continue;
+            bottomRow.getCell(c).value = { formula: `SUM(${colName(c)}6:${colName(c)}43)` };
+        }
+        bottomRow.getCell(27).value = { formula: `IF(${colName(25)}44=0,0,ROUND((${colName(26)}44/${colName(25)}44)*100,1))` };
+        bottomRow.getCell(50).value = { formula: `IF(${colName(48)}44=0,0,ROUND((${colName(49)}44/${colName(48)}44)*100,1))` };
+        bottomRow.getCell(53).value = { formula: `IF(${colName(51)}44=0,0,ROUND((${colName(52)}44/${colName(51)}44)*100,1))` };
+        bottomRow.getCell(64).value = { formula: `IF(${colName(62)}44=0,0,ROUND((${colName(63)}44/${colName(62)}44)*100,1))` };
+        bottomRow.getCell(68).value = { formula: `IF(${colName(66)}44=0,0,ROUND((${colName(67)}44/${colName(66)}44)*100,1))` };
+        bottomRow.commit();
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${formattedDate}_${currentUser.principal_name}_Attendance.xlsx"`);
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
+
 
 const port = process.env.PORT || 3002;
 app.listen(port, () => console.log(`Server running on port ${port}`));

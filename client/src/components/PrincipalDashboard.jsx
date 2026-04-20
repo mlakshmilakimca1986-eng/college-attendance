@@ -224,6 +224,32 @@ export default function PrincipalDashboard() {
             <Eye size={16} /> Preview
           </button>
           <button 
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/export-excel?date=${date}`, {
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                if(!res.ok) throw new Error('Download failed');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const parts = date.split('-');
+                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_Attendance.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+              } catch (e) {
+                showModal('Error', 'Failed to export excel file.', 'error');
+              }
+            }} 
+            className="btn btn-primary" 
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981' }}
+          >
+            <Download size={16} /> Excel
+          </button>
+          <button 
             onClick={finalizeReport} 
             className="btn btn-primary" 
             style={{ gap: '0.4rem', fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
