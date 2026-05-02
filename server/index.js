@@ -501,14 +501,44 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile(path.join(__dirname, 'template_consolidated.xlsx'));
         const formatSheet = workbook.getWorksheet('Format-Blr');
+        const streamWiseSheet = workbook.getWorksheet('STREAM WISE');
         
         const dateParts = targetDate.split('-');
         let formattedDateForFile = targetDate;
+        let displayDate = targetDate;
         if (dateParts.length === 3) {
-            // Convert YYYY-MM-DD to DD-MM-YYYY for the filename
-            if (dateParts[0].length === 4) {
-                formattedDateForFile = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+            // Convert YYYY-MM-DD to DD-MM-YYYY
+            formattedDateForFile = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+            displayDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+        }
+
+        // Set date in both sheets if they exist
+        [formatSheet, streamWiseSheet].forEach(s => {
+            if (s) {
+                const dateCell = s.getCell('U2');
+                dateCell.value = `Date:${displayDate}`;
             }
+        });
+
+        const inputCols = [
+            5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 
+            40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62,63,64, 68,69,70,71,
+            84,85, 87,88, 90,91, 93,94, 104,105
+        ];
+
+        // PRE-CLEAR ALL DATA ROWS to ensure no old data remains
+        // Rows 7-44 (Incoming) and 51-88 (Outgoing)
+        const clearRows = (start, count) => {
+            for (let r = start; r < start + count; r++) {
+                const row = formatSheet.getRow(r);
+                inputCols.forEach(c => {
+                    row.getCell(c).value = 0;
+                });
+            }
+        };
+        if (formatSheet) {
+            clearRows(7, 38);
+            clearRows(51, 38);
         }
         
         // Helper to convert col index to letter
@@ -522,12 +552,6 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             return letter;
         };
 
-        const inputCols = [
-            5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 
-            40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62,63,64, 68,69,70,71,
-            84,85, 87,88, 90,91, 93,94, 104,105
-        ];
-
         // Populate Format-Blr
         for (const user of userList) {
             const campusName = user.principal_name.toUpperCase();
@@ -536,7 +560,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             const findRowIdx = (start, count) => {
                 for (let r = start; r < start + count; r++) {
                     const row = formatSheet.getRow(r);
-                    if (row.getCell(2).text.toUpperCase() === campusName) return r;
+                    if (row.getCell(2).text.toUpperCase().trim() === campusName.trim()) return r;
                 }
                 return null;
             };
@@ -546,16 +570,14 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
 
             if (incRowIdx) {
                 const row = formatSheet.getRow(incRowIdx);
-                // Clear row's inputs first
-                inputCols.forEach(c => row.getCell(c).value = 0);
-
+                // Data is already cleared above, now populate
                 userAttendance.filter(a => a.branch === 'INCOMING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["INCOMING SENIORS"]?.[item.stream];
                     if (baseCol) {
-                        row.getCell(baseCol).value = item.cbse_strength || 0;
-                        row.getCell(baseCol + 1).value = item.cbse_present || 0;
-                        row.getCell(baseCol + 2).value = item.pu_strength || 0;
-                        row.getCell(baseCol + 3).value = item.pu_present || 0;
+                        row.getCell(baseCol).value = parseInt(item.cbse_strength) || 0;
+                        row.getCell(baseCol + 1).value = parseInt(item.cbse_present) || 0;
+                        row.getCell(baseCol + 2).value = parseInt(item.pu_strength) || 0;
+                        row.getCell(baseCol + 3).value = parseInt(item.pu_present) || 0;
                     }
                 });
                 
@@ -568,38 +590,39 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     else if (sName.includes('10TH')) col = 93;
                     
                     if (col) {
-                        row.getCell(col).value = item.strength || 0;
-                        row.getCell(col + 1).value = item.present || 0;
+                        row.getCell(col).value = parseInt(item.strength) || 0;
+                        row.getCell(col + 1).value = parseInt(item.present) || 0;
                     }
                 });
                 
                 userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
-                    row.getCell(104).value = item.strength || 0;
-                    row.getCell(105).value = item.present || 0;
+                    row.getCell(104).value = parseInt(item.strength) || 0;
+                    row.getCell(105).value = parseInt(item.present) || 0;
                 });
             }
 
             if (outRowIdx) {
                 const row = formatSheet.getRow(outRowIdx);
-                // Clear row's inputs first
-                inputCols.forEach(c => row.getCell(c).value = 0);
-
                 userAttendance.filter(a => a.branch === 'OUTGOING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["OUTGOING SENIORS"]?.[item.stream];
                     if (baseCol) {
-                        row.getCell(baseCol).value = item.cbse_strength || 0;
-                        row.getCell(baseCol + 1).value = item.cbse_present || 0;
-                        row.getCell(baseCol + 2).value = item.pu_strength || 0;
-                        row.getCell(baseCol + 3).value = item.pu_present || 0;
+                        row.getCell(baseCol).value = parseInt(item.cbse_strength) || 0;
+                        row.getCell(baseCol + 1).value = parseInt(item.cbse_present) || 0;
+                        row.getCell(baseCol + 2).value = parseInt(item.pu_strength) || 0;
+                        row.getCell(baseCol + 3).value = parseInt(item.pu_present) || 0;
                     }
                 });
             }
         }
 
+        // Fix for "We found a problem with some content"
+        workbook.calcProperties.fullCalcOnLoad = true;
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${formattedDateForFile}_STREAM-WISE_DAILY_ATTENDANCE.xlsx"`);
-        await workbook.xlsx.write(res);
-        res.end();
+        
+        const buffer = await workbook.xlsx.writeBuffer();
+        res.send(buffer);
     } catch (err) {
         console.error(err);
         res.status(500).send(err.message);
