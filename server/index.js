@@ -310,8 +310,8 @@ app.get('/api/admin/export-excel', auth, async (req, res) => {
             // Wipe out the old data in the template before throwing down the new payload
             for (const b in colMapping) {
                 for (const s in colMapping[b]) {
-                    row.getCell(colMapping[b][s].str).value = 0;
-                    row.getCell(colMapping[b][s].pre).value = 0;
+                    row.getCell(colMapping[b][s].str).value = null;
+                    row.getCell(colMapping[b][s].pre).value = null;
                 }
             }
 
@@ -414,8 +414,8 @@ app.get('/api/attendance/export-excel', auth, async (req, res) => {
             const row = sheet.getRow(rowIdx);
             for (const b in colMapping) {
                 for (const s in colMapping[b]) {
-                    row.getCell(colMapping[b][s].str).value = 0;
-                    row.getCell(colMapping[b][s].pre).value = 0;
+                    row.getCell(colMapping[b][s].str).value = null;
+                    row.getCell(colMapping[b][s].pre).value = null;
                 }
             }
             if (currentUser.principal_name.toUpperCase() === campusName) {
@@ -526,13 +526,13 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             84,85, 87,88, 90,91, 93,94, 104,105
         ];
 
-        // PRE-CLEAR ALL DATA ROWS to ensure no old data remains
+        // PRE-CLEAR ALL DATA ROWS to ensure no old data remains (using null for blank cells)
         // Rows 7-44 (Incoming) and 51-88 (Outgoing)
         const clearRows = (start, count) => {
             for (let r = start; r < start + count; r++) {
                 const row = formatSheet.getRow(r);
                 inputCols.forEach(c => {
-                    row.getCell(c).value = 0;
+                    row.getCell(c).value = null;
                 });
             }
         };
@@ -570,14 +570,14 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
 
             if (incRowIdx) {
                 const row = formatSheet.getRow(incRowIdx);
-                // Data is already cleared above, now populate
+                // Data is already cleared above (to null), now populate only existing records
                 userAttendance.filter(a => a.branch === 'INCOMING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["INCOMING SENIORS"]?.[item.stream];
                     if (baseCol) {
-                        row.getCell(baseCol).value = parseInt(item.cbse_strength) || 0;
-                        row.getCell(baseCol + 1).value = parseInt(item.cbse_present) || 0;
-                        row.getCell(baseCol + 2).value = parseInt(item.pu_strength) || 0;
-                        row.getCell(baseCol + 3).value = parseInt(item.pu_present) || 0;
+                        row.getCell(baseCol).value = (item.cbse_strength !== null) ? parseInt(item.cbse_strength) : 0;
+                        row.getCell(baseCol + 1).value = (item.cbse_present !== null) ? parseInt(item.cbse_present) : 0;
+                        row.getCell(baseCol + 2).value = (item.pu_strength !== null) ? parseInt(item.pu_strength) : 0;
+                        row.getCell(baseCol + 3).value = (item.pu_present !== null) ? parseInt(item.pu_present) : 0;
                     }
                 });
                 
@@ -590,14 +590,14 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     else if (sName.includes('10TH')) col = 93;
                     
                     if (col) {
-                        row.getCell(col).value = parseInt(item.strength) || 0;
-                        row.getCell(col + 1).value = parseInt(item.present) || 0;
+                        row.getCell(col).value = (item.strength !== null) ? parseInt(item.strength) : 0;
+                        row.getCell(col + 1).value = (item.present !== null) ? parseInt(item.present) : 0;
                     }
                 });
                 
                 userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
-                    row.getCell(104).value = parseInt(item.strength) || 0;
-                    row.getCell(105).value = parseInt(item.present) || 0;
+                    row.getCell(104).value = (item.strength !== null) ? parseInt(item.strength) : 0;
+                    row.getCell(105).value = (item.present !== null) ? parseInt(item.present) : 0;
                 });
             }
 
@@ -606,17 +606,14 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                 userAttendance.filter(a => a.branch === 'OUTGOING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["OUTGOING SENIORS"]?.[item.stream];
                     if (baseCol) {
-                        row.getCell(baseCol).value = parseInt(item.cbse_strength) || 0;
-                        row.getCell(baseCol + 1).value = parseInt(item.cbse_present) || 0;
-                        row.getCell(baseCol + 2).value = parseInt(item.pu_strength) || 0;
-                        row.getCell(baseCol + 3).value = parseInt(item.pu_present) || 0;
+                        row.getCell(baseCol).value = (item.cbse_strength !== null) ? parseInt(item.cbse_strength) : 0;
+                        row.getCell(baseCol + 1).value = (item.cbse_present !== null) ? parseInt(item.cbse_present) : 0;
+                        row.getCell(baseCol + 2).value = (item.pu_strength !== null) ? parseInt(item.pu_strength) : 0;
+                        row.getCell(baseCol + 3).value = (item.pu_present !== null) ? parseInt(item.pu_present) : 0;
                     }
                 });
             }
         }
-
-        // Fix for "We found a problem with some content"
-        workbook.calcProperties.fullCalcOnLoad = true;
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${formattedDateForFile}_STREAM-WISE_DAILY_ATTENDANCE.xlsx"`);
