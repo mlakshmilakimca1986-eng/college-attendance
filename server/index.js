@@ -37,6 +37,7 @@ async function initDB() {
 
         await runSQL(`ALTER TABLE attendance_data ADD COLUMN IF NOT EXISTS finalized TINYINT(1) DEFAULT 0`);
         await runSQL(`ALTER TABLE attendance_data ADD UNIQUE INDEX ui_attendance (principal_id, date, branch, stream)`);
+        await runSQL(`ALTER TABLE attendance_data ADD INDEX IF NOT EXISTS idx_date (date)`);
         
     } catch (err) { 
         console.error('CRITICAL DATABASE ERROR:', err.message); 
@@ -280,6 +281,7 @@ app.get('/api/admin/export-excel', auth, async (req, res) => {
         const path = require('path');
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile(path.join(__dirname, 'template.xlsx'));
+        workbook.calcProperties.fullCalcOnLoad = true;
         const sheet = workbook.worksheets[0] || workbook.getWorksheet('STREAM WISE');
 
         const parts = targetDate.split('-');
@@ -395,6 +397,7 @@ app.get('/api/attendance/export-excel', auth, async (req, res) => {
         const path = require('path');
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile(path.join(__dirname, 'template.xlsx'));
+        workbook.calcProperties.fullCalcOnLoad = true;
         const sheet = workbook.worksheets[0] || workbook.getWorksheet('STREAM WISE');
         const parts = targetDate.split('-');
         const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -529,53 +532,52 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             }
         });
 
-        const inputCols = [
-            5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 
-            40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62,63,64, 68,69,70,71,
-            84,85, 87,88, 90,91, 93,94, 104,105
-        ];
-
-        // PRE-CLEAR ALL DATA ROWS to ensure no old data remains (using null for blank cells)
-        // Rows 7-44 (Incoming) and 51-88 (Outgoing)
-        const clearRows = (start, count) => {
-            for (let r = start; r < start + count; r++) {
-                const row = formatSheet.getRow(r);
-                inputCols.forEach(c => {
-                    row.getCell(c).value = null;
-                });
-            }
-        };
+        // Optimization: Build Row Maps Once
+        const rowMapInc = {};
+        const rowMapOut = {};
         if (formatSheet) {
-            clearRows(7, 38);
-            clearRows(51, 38);
-        }
-        
-        // Helper to convert col index to letter
-        const getCol = (idx) => {
-            let letter = '';
-            while (idx > 0) {
-                let mod = (idx - 1) % 26;
-                letter = String.fromCharCode(65 + mod) + letter;
-                idx = Math.floor((idx - mod) / 26);
+            for (let r = 7; r <= 44; r++) {
+                const name = formatSheet.getRow(r).getCell(2).text.toUpperCase().trim();
+                if (name) rowMapInc[name] = r;
             }
-            return letter;
-        };
+            for (let r = 51; r <= 88; r++) {
+                const name = formatSheet.getRow(r).getCell(2).text.toUpperCase().trim();
+                if (name) rowMapOut[name] = r;
+            }
+
+            // CLEANUP: Clear all old data values from the template while KEEPING formulas
+            const clearDataRange = (start, count) => {
+                for (let r = start; r < start + count; r++) {
+                    const row = formatSheet.getRow(r);
+                    row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+                        // Clear cells from col 5 onwards that don't have formulas
+                        if (colNumber >= 5 && !cell.formula) {
+                            cell.value = null;
+                        }
+                    });
+                }
+            };
+            clearDataRange(7, 38);
+            clearDataRange(51, 38);
+        }
+
+        // Ensure formulas recalculate on open
+        workbook.calcProperties.fullCalcOnLoad = true;
+        
+        // Optimization: Pre-group attendance by principal_id to avoid repeated filtering
+        const attendanceByPrincipal = {};
+        attendance.forEach(a => {
+            if (!attendanceByPrincipal[a.principal_id]) attendanceByPrincipal[a.principal_id] = [];
+            attendanceByPrincipal[a.principal_id].push(a);
+        });
 
         // Populate Format-Blr
         for (const user of userList) {
             const campusName = user.principal_name.toUpperCase();
-            const userAttendance = attendance.filter(a => a.principal_id === user.id);
+            const userAttendance = attendanceByPrincipal[user.id] || [];
             
-            const findRowIdx = (start, count) => {
-                for (let r = start; r < start + count; r++) {
-                    const row = formatSheet.getRow(r);
-                    if (row.getCell(2).text.toUpperCase().trim() === campusName.trim()) return r;
-                }
-                return null;
-            };
-
-            const incRowIdx = findRowIdx(7, 38);
-            const outRowIdx = findRowIdx(51, 38);
+            const incRowIdx = rowMapInc[campusName];
+            const outRowIdx = rowMapOut[campusName];
 
             if (incRowIdx) {
                 const row = formatSheet.getRow(incRowIdx);

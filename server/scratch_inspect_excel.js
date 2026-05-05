@@ -1,25 +1,24 @@
 const ExcelJS = require('exceljs');
 const path = require('path');
 
-async function inspect() {
+async function check() {
     const workbook = new ExcelJS.Workbook();
-    try {
-        await workbook.xlsx.readFile(path.join(__dirname, '..', '18-04-2026_STREAM-WISE_DAILY_ATTENDANCE@Updated.xlsx'));
-        const sheet = workbook.getWorksheet('Format-Blr');
-        
-        console.log('Worksheet:', sheet.name);
-        
-        const row6 = sheet.getRow(6);
-        for (let i = 1; i <= 100; i++) {
-            const val = row6.getCell(i).text || '';
-            if(val) {
-               console.log(`Col ${i}: Field="${val}"`);
-            }
-        }
+    await workbook.xlsx.readFile(path.join(__dirname, 'template_consolidated.xlsx'));
+    const sheet = workbook.getWorksheet('Format-Blr');
+    if (!sheet) {
+        console.log('Sheet not found');
+        return;
+    }
 
-    } catch (e) {
-        console.error('Error reading Excel:', e);
+    const row = sheet.getRow(7);
+    console.log('Row 7 Cells:');
+    for (let i = 1; i <= 110; i++) {
+        const cell = row.getCell(i);
+        if (cell.formula) {
+            console.log(`Col ${i} (${cell.address.replace(/[0-9]/g, '')}): FORMULA -> ${cell.formula}`);
+        } else if (cell.value !== null && cell.value !== undefined && cell.value !== '') {
+            console.log(`Col ${i} (${cell.address.replace(/[0-9]/g, '')}): VALUE -> ${cell.value}`);
+        }
     }
 }
-
-inspect();
+check();
