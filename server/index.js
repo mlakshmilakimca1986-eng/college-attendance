@@ -557,12 +557,29 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             // CLEANUP: Clear all old data values from the template while KEEPING formulas
             console.time('Clear-Template');
             for (let r = 7; r <= 88; r++) {
-                if (r > 44 && r < 51) continue; // Skip header/blank rows
+                if (r > 44 && r < 51) continue; 
                 const row = formatSheet.getRow(r);
-                for (let c = 5; c <= 110; c++) {
-                    const cell = row.getCell(c);
-                    if (!cell.formula) cell.value = null;
+                
+                // Faster way to clear: modify row.values array directly
+                const vals = row.values;
+                if (!vals) continue;
+                
+                let modified = false;
+                for (let c = 5; c < vals.length; c++) {
+                    const cellVal = vals[c];
+                    if (cellVal === null || cellVal === undefined) continue;
+                    
+                    if (typeof cellVal === 'object' && cellVal.formula) {
+                        // Keep the formula but wipe the cached result (fixes the '-7' issue)
+                        cellVal.result = undefined;
+                        modified = true;
+                    } else if (c >= 5) {
+                        // Clear data values
+                        vals[c] = null;
+                        modified = true;
+                    }
                 }
+                if (modified) row.values = vals;
             }
             console.timeEnd('Clear-Template');
         }
