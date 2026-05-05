@@ -322,8 +322,13 @@ app.get('/api/admin/export-excel', auth, async (req, res) => {
             for (const item of campusData) {
                 const map = colMapping[item.branch];
                 if (map && map[item.stream]) {
-                    row.getCell(map[item.stream].str).value = parseInt(item.strength) || 0;
-                    row.getCell(map[item.stream].pre).value = parseInt(item.present) || 0;
+                    const str = parseInt(item.strength) || 0;
+                    const pre = parseInt(item.present) || 0;
+                    // Only write if there's actual data to show
+                    if (str > 0) {
+                        row.getCell(map[item.stream].str).value = str;
+                        row.getCell(map[item.stream].pre).value = pre;
+                    }
                 }
             }
             row.commit();
@@ -422,8 +427,12 @@ app.get('/api/attendance/export-excel', auth, async (req, res) => {
                 for (const item of attendance) {
                     const map = colMapping[item.branch];
                     if (map && map[item.stream]) {
-                        row.getCell(map[item.stream].str).value = parseInt(item.strength) || 0;
-                        row.getCell(map[item.stream].pre).value = parseInt(item.present) || 0;
+                        const str = parseInt(item.strength) || 0;
+                        const pre = parseInt(item.present) || 0;
+                        if (str > 0) {
+                            row.getCell(map[item.stream].str).value = str;
+                            row.getCell(map[item.stream].pre).value = pre;
+                        }
                     }
                 }
             }
@@ -574,10 +583,19 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                 userAttendance.filter(a => a.branch === 'INCOMING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["INCOMING SENIORS"]?.[item.stream];
                     if (baseCol) {
-                        row.getCell(baseCol).value = (item.cbse_strength !== null) ? parseInt(item.cbse_strength) : 0;
-                        row.getCell(baseCol + 1).value = (item.cbse_present !== null) ? parseInt(item.cbse_present) : 0;
-                        row.getCell(baseCol + 2).value = (item.pu_strength !== null) ? parseInt(item.pu_strength) : 0;
-                        row.getCell(baseCol + 3).value = (item.pu_present !== null) ? parseInt(item.pu_present) : 0;
+                        const cb_s = (item.cbse_strength !== null) ? parseInt(item.cbse_strength) : 0;
+                        const cb_p = (item.cbse_present !== null) ? parseInt(item.cbse_present) : 0;
+                        const pu_s = (item.pu_strength !== null) ? parseInt(item.pu_strength) : 0;
+                        const pu_p = (item.pu_present !== null) ? parseInt(item.pu_present) : 0;
+
+                        if (cb_s > 0) {
+                            row.getCell(baseCol).value = cb_s;
+                            row.getCell(baseCol + 1).value = cb_p;
+                        }
+                        if (pu_s > 0) {
+                            row.getCell(baseCol + 2).value = pu_s;
+                            row.getCell(baseCol + 3).value = pu_p;
+                        }
                     }
                 });
                 
@@ -590,14 +608,22 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     else if (sName.includes('10TH')) col = 93;
                     
                     if (col) {
-                        row.getCell(col).value = (item.strength !== null) ? parseInt(item.strength) : 0;
-                        row.getCell(col + 1).value = (item.present !== null) ? parseInt(item.present) : 0;
+                        const str = (item.strength !== null) ? parseInt(item.strength) : 0;
+                        const pre = (item.present !== null) ? parseInt(item.present) : 0;
+                        if (str > 0) {
+                            row.getCell(col).value = str;
+                            row.getCell(col + 1).value = pre;
+                        }
                     }
                 });
                 
                 userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
-                    row.getCell(104).value = (item.strength !== null) ? parseInt(item.strength) : 0;
-                    row.getCell(105).value = (item.present !== null) ? parseInt(item.present) : 0;
+                    const str = (item.strength !== null) ? parseInt(item.strength) : 0;
+                    const pre = (item.present !== null) ? parseInt(item.present) : 0;
+                    if (str > 0) {
+                        row.getCell(104).value = str;
+                        row.getCell(105).value = pre;
+                    }
                 });
             }
 
@@ -606,10 +632,19 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                 userAttendance.filter(a => a.branch === 'OUTGOING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["OUTGOING SENIORS"]?.[item.stream];
                     if (baseCol) {
-                        row.getCell(baseCol).value = (item.cbse_strength !== null) ? parseInt(item.cbse_strength) : 0;
-                        row.getCell(baseCol + 1).value = (item.cbse_present !== null) ? parseInt(item.cbse_present) : 0;
-                        row.getCell(baseCol + 2).value = (item.pu_strength !== null) ? parseInt(item.pu_strength) : 0;
-                        row.getCell(baseCol + 3).value = (item.pu_present !== null) ? parseInt(item.pu_present) : 0;
+                        const cb_s = (item.cbse_strength !== null) ? parseInt(item.cbse_strength) : 0;
+                        const cb_p = (item.cbse_present !== null) ? parseInt(item.cbse_present) : 0;
+                        const pu_s = (item.pu_strength !== null) ? parseInt(item.pu_strength) : 0;
+                        const pu_p = (item.pu_present !== null) ? parseInt(item.pu_present) : 0;
+
+                        if (cb_s > 0) {
+                            row.getCell(baseCol).value = cb_s;
+                            row.getCell(baseCol + 1).value = cb_p;
+                        }
+                        if (pu_s > 0) {
+                            row.getCell(baseCol + 2).value = pu_s;
+                            row.getCell(baseCol + 3).value = pu_p;
+                        }
                     }
                 });
             }
