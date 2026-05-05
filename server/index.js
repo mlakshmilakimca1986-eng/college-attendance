@@ -496,8 +496,10 @@ const consolidatedMapping = {
 app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
     const { date, admin } = req.query;
     const targetDate = date || new Date().toISOString().split('T')[0];
+    console.time(`Export-Consolidated-${targetDate}`);
     try {
         let attendance, userList;
+        console.time('DB-Query');
         if (req.user.role === 'admin' && admin === 'true') {
             [userList] = await pool.query('SELECT id, principal_name FROM users WHERE role = "principal" AND is_approved = TRUE');
             [attendance] = await pool.query('SELECT * FROM attendance_data WHERE date = ? AND finalized = 1', [targetDate]);
@@ -506,12 +508,19 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             userList = users;
             [attendance] = await pool.query('SELECT * FROM attendance_data WHERE principal_id = ? AND date = ?', [req.user.id, targetDate]);
         }
+        console.timeEnd('DB-Query');
+        console.log(`>>> Export: Found ${userList.length} users and ${attendance.length} attendance rows`);
         
-        if (userList.length === 0) return res.status(404).send('No data found');
+        if (userList.length === 0) {
+            console.timeEnd(`Export-Consolidated-${targetDate}`);
+            return res.status(404).send('No data found');
+        }
 
         const path = require('path');
         const workbook = new ExcelJS.Workbook();
+        console.time('Read-Template');
         await workbook.xlsx.readFile(path.join(__dirname, 'template_consolidated.xlsx'));
+        console.timeEnd('Read-Template');
         const formatSheet = workbook.getWorksheet('Format-Blr');
         const streamWiseSheet = workbook.getWorksheet('STREAM WISE');
         
@@ -546,19 +555,16 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             }
 
             // CLEANUP: Clear all old data values from the template while KEEPING formulas
-            const clearDataRange = (start, count) => {
-                for (let r = start; r < start + count; r++) {
-                    const row = formatSheet.getRow(r);
-                    row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
-                        // Clear cells from col 5 onwards that don't have formulas
-                        if (colNumber >= 5 && !cell.formula) {
-                            cell.value = null;
-                        }
-                    });
+            console.time('Clear-Template');
+            for (let r = 7; r <= 88; r++) {
+                if (r > 44 && r < 51) continue; // Skip header/blank rows
+                const row = formatSheet.getRow(r);
+                for (let c = 5; c <= 110; c++) {
+                    const cell = row.getCell(c);
+                    if (!cell.formula) cell.value = null;
                 }
-            };
-            clearDataRange(7, 38);
-            clearDataRange(51, 38);
+            }
+            console.timeEnd('Clear-Template');
         }
 
         // Ensure formulas recalculate on open
@@ -570,6 +576,8 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             if (!attendanceByPrincipal[a.principal_id]) attendanceByPrincipal[a.principal_id] = [];
             attendanceByPrincipal[a.principal_id].push(a);
         });
+
+        console.time('Populate-Data');
 
         // Populate Format-Blr
         for (const user of userList) {
@@ -652,13 +660,20 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
             }
         }
 
+        console.timeEnd('Populate-Data');
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${formattedDateForFile}_STREAM-WISE_DAILY_ATTENDANCE.xlsx"`);
         
+        console.time('Write-Buffer');
         const buffer = await workbook.xlsx.writeBuffer();
+        console.timeEnd('Write-Buffer');
+        
         res.send(buffer);
+        console.timeEnd(`Export-Consolidated-${targetDate}`);
     } catch (err) {
-        console.error(err);
+        console.error('EXPORT ERROR:', err);
+        console.timeEnd(`Export-Consolidated-${targetDate}`);
         res.status(500).send(err.message);
     }
 });
