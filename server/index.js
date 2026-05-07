@@ -554,45 +554,28 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                 if (name) rowMapOut[name] = r;
             }
 
-            // CLEANUP: Clear all old data values from the template while KEEPING formulas
-            console.time('Clear-Template');
-            for (let r = 7; r <= 88; r++) {
-                if (r > 44 && r < 51) continue; 
-                const row = formatSheet.getRow(r);
-                
-                // Faster way to clear: modify row.values array directly
-                const vals = row.values;
-                if (!vals) continue;
-                
-                let modified = false;
-                for (let c = 5; c < vals.length; c++) {
-                    const cellVal = vals[c];
-                    if (cellVal === null || cellVal === undefined) continue;
-                    
-                    if (typeof cellVal === 'object' && cellVal.formula) {
-                        // Keep the formula but wipe the cached result (fixes the '-7' issue)
-                        cellVal.result = undefined;
-                        modified = true;
-                    } else if (c >= 5) {
-                        // Clear data values
-                        vals[c] = null;
-                        modified = true;
-                    }
-                }
-                if (modified) row.values = vals;
-            }
-            console.timeEnd('Clear-Template');
+            // CLEANUP: We no longer do a mass clear to preserve all formatting and speed up the process.
+            // We will clear specific cells during population.
         }
+
+        // List of all data entry columns that we should clear before populating
+        const inputCols = [
+            5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 
+            40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62,63,64, 68,69,70,71,
+            84,85, 87,88, 90,91, 93,94, 104,105
+        ];
 
         // Ensure formulas recalculate on open
         workbook.calcProperties.fullCalcOnLoad = true;
         
-        // Optimization: Pre-group attendance by principal_id to avoid repeated filtering
+        // Optimization: Pre-group attendance by principal_id
+        console.time('Grouping-Data');
         const attendanceByPrincipal = {};
         attendance.forEach(a => {
             if (!attendanceByPrincipal[a.principal_id]) attendanceByPrincipal[a.principal_id] = [];
             attendanceByPrincipal[a.principal_id].push(a);
         });
+        console.timeEnd('Grouping-Data');
 
         console.time('Populate-Data');
 
@@ -606,7 +589,16 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
 
             if (incRowIdx) {
                 const row = formatSheet.getRow(incRowIdx);
-                // Data is already cleared above (to null), now populate only existing records
+                // Targeted clear of data columns only to preserve formatting
+                inputCols.forEach(c => {
+                    const cell = row.getCell(c);
+                    if (cell.formula) {
+                        cell.value = { formula: cell.formula }; // Clear cached result
+                    } else {
+                        cell.value = null;
+                    }
+                });
+                
                 userAttendance.filter(a => a.branch === 'INCOMING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["INCOMING SENIORS"]?.[item.stream];
                     if (baseCol) {
@@ -656,6 +648,15 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
 
             if (outRowIdx) {
                 const row = formatSheet.getRow(outRowIdx);
+                // Targeted clear of data columns only
+                inputCols.forEach(c => {
+                    const cell = row.getCell(c);
+                    if (cell.formula) {
+                        cell.value = { formula: cell.formula };
+                    } else {
+                        cell.value = null;
+                    }
+                });
                 userAttendance.filter(a => a.branch === 'OUTGOING SENIORS').forEach(item => {
                     const baseCol = consolidatedMapping["OUTGOING SENIORS"]?.[item.stream];
                     if (baseCol) {

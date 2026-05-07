@@ -3,13 +3,12 @@ const path = require('path');
 
 async function check() {
     const workbook = new ExcelJS.Workbook();
+    console.time('Read-Template');
     await workbook.xlsx.readFile(path.join(__dirname, 'template_consolidated.xlsx'));
+    console.timeEnd('Read-Template');
     const sheet = workbook.getWorksheet('Format-Blr');
-    const row = sheet.getRow(7);
-    console.log('Row 7, Cols 19-25:');
-    for (let i = 19; i <= 25; i++) {
-        const cell = row.getCell(i);
-        console.log(`Col ${i} (${cell.address.replace(/[0-9]/g, '')}): ${cell.formula ? 'FORMULA: ' + cell.formula : 'VALUE: ' + cell.value}`);
-    }
+    console.log('Used Range:', sheet.dimensions);
+    console.log('Row Count:', sheet.rowCount);
+    console.log('Actual Row Count:', sheet.actualRowCount);
 }
 check();
