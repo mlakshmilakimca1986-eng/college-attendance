@@ -568,21 +568,21 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
         // Ensure formulas recalculate on open
         workbook.calcProperties.fullCalcOnLoad = true;
         
-        // Optimization: Pre-group attendance by principal_id
+        // Optimization: Pre-group attendance by principal_id AND branch
         console.time('Grouping-Data');
-        const attendanceByPrincipal = {};
+        const groupedAttendance = {}; // principal_id -> branch -> [records]
         attendance.forEach(a => {
-            if (!attendanceByPrincipal[a.principal_id]) attendanceByPrincipal[a.principal_id] = [];
-            attendanceByPrincipal[a.principal_id].push(a);
+            if (!groupedAttendance[a.principal_id]) groupedAttendance[a.principal_id] = {};
+            if (!groupedAttendance[a.principal_id][a.branch]) groupedAttendance[a.principal_id][a.branch] = [];
+            groupedAttendance[a.principal_id][a.branch].push(a);
         });
         console.timeEnd('Grouping-Data');
 
         console.time('Populate-Data');
-
         // Populate Format-Blr
         for (const user of userList) {
             const campusName = user.principal_name.toUpperCase();
-            const userAttendance = attendanceByPrincipal[user.id] || [];
+            const campusData = groupedAttendance[user.id] || {};
             
             const incRowIdx = rowMapInc[campusName];
             const outRowIdx = rowMapOut[campusName];
@@ -599,7 +599,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     }
                 });
                 
-                userAttendance.filter(a => a.branch === 'INCOMING SENIORS').forEach(item => {
+                (campusData['INCOMING SENIORS'] || []).forEach(item => {
                     const baseCol = consolidatedMapping["INCOMING SENIORS"]?.[item.stream];
                     if (baseCol) {
                         const cb_s = (item.cbse_strength !== null) ? parseInt(item.cbse_strength) : 0;
@@ -618,7 +618,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     }
                 });
                 
-                userAttendance.filter(a => a.branch === 'CO-IPL').forEach(item => {
+                (campusData['CO-IPL'] || []).forEach(item => {
                     let col = null;
                     const sName = item.stream?.toUpperCase() || "";
                     if (sName.includes('7TH')) col = 84;
@@ -636,7 +636,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                     }
                 });
                 
-                userAttendance.filter(a => a.branch === 'LTC-VAIDYAH').forEach(item => {
+                (campusData['LTC-VAIDYAH'] || []).forEach(item => {
                     const str = (item.strength !== null) ? parseInt(item.strength) : 0;
                     const pre = (item.present !== null) ? parseInt(item.present) : 0;
                     if (str > 0) {
@@ -657,7 +657,7 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                         cell.value = null;
                     }
                 });
-                userAttendance.filter(a => a.branch === 'OUTGOING SENIORS').forEach(item => {
+                (campusData['OUTGOING SENIORS'] || []).forEach(item => {
                     const baseCol = consolidatedMapping["OUTGOING SENIORS"]?.[item.stream];
                     if (baseCol) {
                         const cb_s = (item.cbse_strength !== null) ? parseInt(item.cbse_strength) : 0;
@@ -683,11 +683,11 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${formattedDateForFile}_STREAM-WISE_DAILY_ATTENDANCE.xlsx"`);
         
-        console.time('Write-Buffer');
-        const buffer = await workbook.xlsx.writeBuffer();
-        console.timeEnd('Write-Buffer');
+        console.time('Write-Stream');
+        await workbook.xlsx.write(res);
+        console.timeEnd('Write-Stream');
         
-        res.send(buffer);
+        res.end();
         console.timeEnd(`Export-Consolidated-${targetDate}`);
     } catch (err) {
         console.error('EXPORT ERROR:', err);
