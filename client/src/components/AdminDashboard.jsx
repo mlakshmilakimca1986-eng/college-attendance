@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Send, Users, LogOut, Check, ShieldAlert, Key, Globe, Clock, UserCheck, Trash2, Download } from 'lucide-react';
+import { CheckCircle, Send, Users, LogOut, Check, ShieldAlert, Key, Globe, Clock, UserCheck, Trash2, Download, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import Modal from './Modal';
 
@@ -39,6 +39,7 @@ export default function AdminDashboard() {
   const [promptModal, setPromptModal] = useState({ isOpen: false, title: '', value: '', onConfirm: null });
   const [reportModal, setReportModal] = useState({ isOpen: false, data: null, branchName: '', date: '' });
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const getPercentage = (p, s) => {
     const present = parseFloat(p) || 0;
@@ -216,6 +217,7 @@ export default function AdminDashboard() {
           <button 
             onClick={async () => {
               try {
+                setIsDownloading(true);
                 const token = localStorage.getItem('token');
                 const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/admin/export-excel?date=${selectedDate}`, {
                   headers: { Authorization: `Bearer ${token}` }
@@ -226,22 +228,27 @@ export default function AdminDashboard() {
                 const a = document.createElement('a');
                 a.href = url;
                 const parts = selectedDate.split('-');
-                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_COLLEGE ATTENDANCE.xlsx`;
+                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_COLLEGE_ATTENDANCE.xlsx`;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
               } catch (e) {
                 showModal('Error', 'Failed to export excel file.', 'error');
+              } finally {
+                setIsDownloading(false);
               }
             }} 
             className="btn btn-primary" 
+            disabled={isDownloading}
             style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#3b82f6', borderColor: '#3b82f6' }}
           >
-            <Download size={16} /> COLLEGE ATTENDANCE
+            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {isDownloading ? 'Downloading...' : 'COLLEGE ATTENDANCE'}
           </button>
           <button 
             onClick={async () => {
               try {
+                setIsDownloading(true);
                 const token = localStorage.getItem('token');
                 const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/export-consolidated?date=${selectedDate}&admin=true`, {
                   headers: { Authorization: `Bearer ${token}` }
@@ -258,12 +265,16 @@ export default function AdminDashboard() {
                 a.remove();
               } catch (e) {
                 showModal('Error', 'Failed to export consolidated excel file.', 'error');
+              } finally {
+                setIsDownloading(false);
               }
             }} 
             className="btn btn-primary" 
+            disabled={isDownloading}
             style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981' }}
           >
-            <Download size={16} /> STREAM-WISE DAILY ATTENDANCE
+            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {isDownloading ? 'Downloading...' : 'STREAM-WISE DAILY ATTENDANCE'}
           </button>
           <button onClick={() => setView('approvals')} className={`btn ${view === 'approvals' ? 'btn-primary' : 'btn-ghost'}`} style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem' }}>
             <CheckCircle size={16} /> Approvals {pendingApprovals.length > 0 && <span className="badge badge-pending" style={{ marginLeft: '5px' }}>{pendingApprovals.length}</span>}
@@ -450,8 +461,18 @@ export default function AdminDashboard() {
         <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-card" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflow: 'auto', padding: '2.5rem', borderTop: '10px solid #6366f1' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button onClick={handleDownloadPDF} className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', gap: '0.5rem', fontWeight: 800 }}>
-                <Download size={18} /> DOWNLOAD PDF
+              <button 
+                onClick={async () => {
+                  setIsDownloading(true);
+                  await handleDownloadPDF();
+                  setIsDownloading(false);
+                }} 
+                className="btn btn-primary" 
+                disabled={isDownloading}
+                style={{ padding: '0.6rem 1.2rem', gap: '0.5rem', fontWeight: 800 }}
+              >
+                {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                {isDownloading ? 'DOWNLOADING...' : 'DOWNLOAD PDF'}
               </button>
               <button onClick={() => setReportModal({ ...reportModal, isOpen: false })} className="btn btn-ghost" style={{ padding: '0.5rem' }}>✕</button>
             </div>

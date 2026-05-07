@@ -27,6 +27,7 @@ export default function PrincipalDashboard() {
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [reportModal, setReportModal] = useState({ isOpen: false });
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     fetchTodayData();
@@ -276,6 +277,7 @@ export default function PrincipalDashboard() {
           <button 
             onClick={async () => {
               try {
+                setIsDownloading(true);
                 const token = localStorage.getItem('token');
                 const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/export-excel?date=${date}`, {
                   headers: { Authorization: `Bearer ${token}` }
@@ -286,22 +288,27 @@ export default function PrincipalDashboard() {
                 const a = document.createElement('a');
                 a.href = url;
                 const parts = date.split('-');
-                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_COLLEGE ATTENDANCE.xlsx`;
+                a.download = `${parts[2]}-${parts[1]}-${parts[0]}_COLLEGE_ATTENDANCE.xlsx`;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
               } catch (e) {
                 showModal('Error', 'Failed to export excel file.', 'error');
+              } finally {
+                setIsDownloading(false);
               }
             }} 
             className="btn btn-primary" 
+            disabled={isDownloading}
             style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#3b82f6', borderColor: '#3b82f6' }}
           >
-            <Download size={16} /> COLLEGE ATTENDANCE
+            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {isDownloading ? 'Downloading...' : 'COLLEGE ATTENDANCE'}
           </button>
           <button 
             onClick={async () => {
               try {
+                setIsDownloading(true);
                 const token = localStorage.getItem('token');
                 const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/export-consolidated?date=${date}`, {
                   headers: { Authorization: `Bearer ${token}` }
@@ -318,12 +325,16 @@ export default function PrincipalDashboard() {
                 a.remove();
               } catch (e) {
                 showModal('Error', 'Failed to export consolidated excel file.', 'error');
+              } finally {
+                setIsDownloading(false);
               }
             }} 
             className="btn btn-primary" 
+            disabled={isDownloading}
             style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981' }}
           >
-            <Download size={16} /> STREAM-WISE DAILY ATTENDANCE
+            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {isDownloading ? 'Downloading...' : 'STREAM-WISE DAILY ATTENDANCE'}
           </button>
           <button 
             onClick={finalizeReport} 
@@ -501,8 +512,18 @@ export default function PrincipalDashboard() {
         <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-card" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflow: 'auto', padding: '2.5rem', borderTop: '10px solid #6366f1' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button onClick={handleDownloadPDF} className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', gap: '0.5rem', fontWeight: 800 }}>
-                <Download size={18} /> DOWNLOAD PDF
+              <button 
+                onClick={async () => {
+                  setIsDownloading(true);
+                  await handleDownloadPDF();
+                  setIsDownloading(false);
+                }} 
+                className="btn btn-primary" 
+                disabled={isDownloading}
+                style={{ padding: '0.6rem 1.2rem', gap: '0.5rem', fontWeight: 800 }}
+              >
+                {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                {isDownloading ? 'DOWNLOADING...' : 'DOWNLOAD PDF'}
               </button>
               <button onClick={() => setReportModal({ isOpen: false })} className="btn btn-ghost" style={{ padding: '0.5rem' }}>✕</button>
             </div>
