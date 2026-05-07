@@ -635,15 +635,6 @@ app.get('/api/attendance/export-consolidated', auth, async (req, res) => {
                         }
                     }
                 });
-                
-                (campusData['LTC-VAIDYAH'] || []).forEach(item => {
-                    const str = (item.strength !== null) ? parseInt(item.strength) : 0;
-                    const pre = (item.present !== null) ? parseInt(item.present) : 0;
-                    if (str > 0) {
-                        row.getCell(104).value = str;
-                        row.getCell(105).value = pre;
-                    }
-                });
             }
 
             if (outRowIdx) {
