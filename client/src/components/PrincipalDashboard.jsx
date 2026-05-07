@@ -27,7 +27,7 @@ export default function PrincipalDashboard() {
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [reportModal, setReportModal] = useState({ isOpen: false });
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadingType, setDownloadingType] = useState(null); // 'college', 'stream', or 'pdf'
 
   useEffect(() => {
     fetchTodayData();
@@ -277,7 +277,7 @@ export default function PrincipalDashboard() {
           <button 
             onClick={async () => {
               try {
-                setIsDownloading(true);
+                setDownloadingType('college');
                 const token = localStorage.getItem('token');
                 const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/export-excel?date=${date}`, {
                   headers: { Authorization: `Bearer ${token}` }
@@ -295,20 +295,20 @@ export default function PrincipalDashboard() {
               } catch (e) {
                 showModal('Error', 'Failed to export excel file.', 'error');
               } finally {
-                setIsDownloading(false);
+                setDownloadingType(null);
               }
             }} 
             className="btn btn-primary" 
-            disabled={isDownloading}
+            disabled={!!downloadingType}
             style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#3b82f6', borderColor: '#3b82f6' }}
           >
-            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            {isDownloading ? 'Downloading...' : 'COLLEGE ATTENDANCE'}
+            {downloadingType === 'college' ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {downloadingType === 'college' ? 'Downloading...' : 'COLLEGE ATTENDANCE'}
           </button>
           <button 
             onClick={async () => {
               try {
-                setIsDownloading(true);
+                setDownloadingType('stream');
                 const token = localStorage.getItem('token');
                 const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/api/attendance/export-consolidated?date=${date}`, {
                   headers: { Authorization: `Bearer ${token}` }
@@ -326,15 +326,15 @@ export default function PrincipalDashboard() {
               } catch (e) {
                 showModal('Error', 'Failed to export consolidated excel file.', 'error');
               } finally {
-                setIsDownloading(false);
+                setDownloadingType(null);
               }
             }} 
             className="btn btn-primary" 
-            disabled={isDownloading}
+            disabled={!!downloadingType}
             style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', gap: '0.4rem', background: '#10b981', borderColor: '#10b981' }}
           >
-            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            {isDownloading ? 'Downloading...' : 'STREAM-WISE DAILY ATTENDANCE'}
+            {downloadingType === 'stream' ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {downloadingType === 'stream' ? 'Downloading...' : 'STREAM-WISE DAILY ATTENDANCE'}
           </button>
           <button 
             onClick={finalizeReport} 
@@ -514,16 +514,16 @@ export default function PrincipalDashboard() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '1rem' }}>
               <button 
                 onClick={async () => {
-                  setIsDownloading(true);
+                  setDownloadingType('pdf');
                   await handleDownloadPDF();
-                  setIsDownloading(false);
+                  setDownloadingType(null);
                 }} 
                 className="btn btn-primary" 
-                disabled={isDownloading}
+                disabled={!!downloadingType}
                 style={{ padding: '0.6rem 1.2rem', gap: '0.5rem', fontWeight: 800 }}
               >
-                {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-                {isDownloading ? 'DOWNLOADING...' : 'DOWNLOAD PDF'}
+                {downloadingType === 'pdf' ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                {downloadingType === 'pdf' ? 'DOWNLOADING...' : 'DOWNLOAD PDF'}
               </button>
               <button onClick={() => setReportModal({ isOpen: false })} className="btn btn-ghost" style={{ padding: '0.5rem' }}>✕</button>
             </div>
